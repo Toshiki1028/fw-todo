@@ -9,6 +9,7 @@
     <div class="container">
         <h1 class="page-title">やること一覧</h1>
         <p class="flash" th:if="${flashMessage != null}" th:text="${flashMessage}"></p>
+        <p class="flash" th:if="${message != null}" th:text="${message}"></p>
         <a class="btn" th:href="@{/todos/new}">新規登録</a>
         <p th:if="${#lists.isEmpty(todos)}">まだ1件も登録されていません</p>
         <table class="todo-table" th:unless="${#lists.isEmpty(todos)}">
@@ -19,6 +20,7 @@
                     <th>優先度</th>
                     <th>期限</th>
                     <th>状態</th>
+                    <th>操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -28,6 +30,7 @@
                     <td th:text="${todo.priority == 1 ? '高' : (todo.priority == 2 ? '中' : (todo.priority == 3 ? '低' : ''))}">優先度</td>
                     <td th:text="${todo.dueDate}">期限</td>
                     <td th:text="${todo.completed ? '完了' : '未完了'}">状態</td>
+                    <td><a class="link" th:href="@{/todos/{id}/edit(id=${todo.id})}">編集</a> <a class="link" th:href="@{/todos/{id}/delete(id=${todo.id})}">削除</a></td>
                 </tr>
             </tbody>
         </table>

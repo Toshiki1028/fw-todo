@@ -3,18 +3,46 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.todoapp.TodoMapper">
-    <select id="findAll" resultType="com.example.todoapp.Todo">
+   <select id="findAll" resultType="com.example.todoapp.Todo">
+    SELECT
+        id,
+        title,
+        category,
+        priority,
+        due_date AS dueDate,
+        completed
+    FROM todos
+    ORDER BY due_date ASC
+</select>
+    <select id="findById" resultType="com.example.todoapp.Todo">
         SELECT
+            id,
             title,
+            detail,
             category,
             priority,
-            due_date,
+            due_date AS dueDate,
             completed
         FROM todos
-        ORDER BY due_date ASC
+        WHERE id = #{id}
     </select>
     <insert id="insert">
         INSERT INTO todos (title, detail, category, priority, due_date)
         VALUES (#{title}, #{detail}, #{category}, #{priority}, #{dueDate})
     </insert>
+    <update id="update">
+        UPDATE todos
+        SET
+            title = #{title},
+            detail = #{detail},
+            category = #{category},
+            priority = #{priority},
+            due_date = #{dueDate},
+            completed = #{completed}
+        WHERE id = #{id}
+    </update>
+    <delete id="deleteById">
+        DELETE FROM todos
+        WHERE id = #{id}
+    </delete>
 </mapper>

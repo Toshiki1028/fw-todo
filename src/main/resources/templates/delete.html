@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>削除内容の確認</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title">削除内容の確認</h1>
+        <p class="confirm-value">やること：<span th:text="${#strings.isEmpty(todo.title) ? '（入力なし）' : todo.title}">（入力なし）</span></p>
+        <p class="confirm-value">ジャンル：<span th:text="${#strings.isEmpty(todo.category) ? '（入力なし）' : todo.category}">（入力なし）</span></p>
+        <p class="confirm-value">期限：<span th:text="${todo.dueDate == null ? '（入力なし）' : todo.dueDate}">（入力なし）</span></p>
+        <div class="confirm-actions">
+            <form th:action="@{/todos/{id}/delete(id=${id})}" method="post">
+                <button class="btn" type="submit">消す</button>
+            </form>
+            <a class="btn sub" th:href="@{/todos}">やめる</a>
+        </div>
+    </div>
+</body>
+</html>
