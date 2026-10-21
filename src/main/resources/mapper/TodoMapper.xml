@@ -3,17 +3,29 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.todoapp.TodoMapper">
-   <select id="findAll" resultType="com.example.todoapp.Todo">
-    SELECT
-        id,
-        title,
-        category,
-        priority,
-        due_date AS dueDate,
-        completed
-    FROM todos
-    ORDER BY due_date ASC
-</select>
+    <select id="search" resultType="com.example.todoapp.Todo">
+        SELECT
+            id,
+            title,
+            category,
+            priority,
+            due_date AS dueDate,
+            completed
+        FROM todos
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND title LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="category != null and category != ''">
+                AND category = #{category}
+            </if>
+        </where>
+        ORDER BY due_date
+        <choose>
+            <when test="order == 'desc'">DESC</when>
+            <otherwise>ASC</otherwise>
+        </choose>
+    </select>
     <select id="findById" resultType="com.example.todoapp.Todo">
         SELECT
             id,
