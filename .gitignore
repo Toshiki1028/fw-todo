@@ -31,4 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+!.vscode/
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/scripts/
+!.vscode/scripts/check-port-8080.ps1
+.vscode/settings.json
 .env

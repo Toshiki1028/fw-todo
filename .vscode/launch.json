@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "fw-todo (managed)",
+      "request": "launch",
+      "mainClass": "com.example.todoapp.TodoappApplication",
+      "projectName": "todoapp",
+      "preLaunchTask": "fw-todo: Check port 8080",
+      "console": "integratedTerminal"
+    }
+  ]
+}

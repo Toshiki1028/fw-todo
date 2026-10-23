@@ -34,13 +34,15 @@
             category,
             priority,
             due_date AS dueDate,
-            completed
+            completed,
+            created_at AS createdAt,
+            updated_at AS updatedAt
         FROM todos
         WHERE id = #{id}
     </select>
-    <insert id="insert">
-        INSERT INTO todos (title, detail, category, priority, due_date)
-        VALUES (#{title}, #{detail}, #{category}, #{priority}, #{dueDate})
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO todos (title, detail, category, priority, due_date, completed)
+        VALUES (#{title}, #{detail}, #{category}, #{priority}, #{dueDate}, COALESCE(#{completed}, FALSE))
     </insert>
     <update id="update">
         UPDATE todos
