@@ -29,3 +29,5 @@ Content-Type: application/json
 
 ### 4. 1件削除する
 DELETE http://localhost:8080/api/todos/1
+### 6. 自分のアプリの祝日API
+GET http://localhost:8080/api/holidays

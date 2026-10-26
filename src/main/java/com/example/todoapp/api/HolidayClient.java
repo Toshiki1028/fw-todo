@@ -29,7 +29,7 @@ public class HolidayClient {
     public HolidayFetchResult fetchHolidays() {
         try {
             Map<String, String> holidays = restClient.get()
-                    .uri(HOLIDAYS_API_URL)
+                    .uri("https://holidays-jp.github.io/api/v1/date.json")
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {
                     });

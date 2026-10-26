@@ -21,6 +21,7 @@ services:
   app:
     build: .
     container_name: fw-app
+    profiles: [docker-app]
     ports:
       - "8080:8080"
     environment:
