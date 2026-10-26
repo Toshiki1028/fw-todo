@@ -117,3 +117,70 @@ body {
     color: #334155;
     text-decoration: underline;
 }
+
+.calendar-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 24px;
+    margin-bottom: 16px;
+}
+
+.calendar-nav-months,
+.calendar-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.calendar-nav-actions {
+    margin-left: auto;
+}
+
+.calendar-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.calendar-table th,
+.calendar-table td {
+    border: 2px solid #475569;
+    padding: 8px;
+}
+
+.calendar-table th {
+    background: #f1f5f9;
+    text-align: center;
+}
+
+.calendar-table td {
+    height: 96px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.calendar-empty {
+    background: #f8fafc;
+}
+
+.calendar-table td.calendar-saturday {
+    background: #b8d8ff;
+}
+
+.calendar-table td.calendar-sunday {
+    background: #ffc9d2;
+}
+
+.calendar-table td.calendar-holiday {
+    background: #ffdf99;
+}
+
+.calendar-todo-overdue {
+    color: #b91c1c;
+    font-weight: bold;
+}
+
+.calendar-todo-link {
+    display: block;
+}

@@ -1,6 +1,7 @@
 package com.example.todoapp.api;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,8 +44,10 @@ public class TodoApiController {
     public List<TodoDto> list(
             @RequestParam(name = "keyword", defaultValue = "") String keyword,
             @RequestParam(name = "category", defaultValue = "") String category,
-            @RequestParam(name = "order", defaultValue = "asc") String order) {
-        List<Todo> searchResults = todoService.search(keyword, category, order);
+            @RequestParam(name = "order", defaultValue = "asc") String order,
+            @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        List<Todo> searchResults = todoService.search(keyword, category, order, from, to);
         if (searchResults.isEmpty()) {
             return List.of();
         }

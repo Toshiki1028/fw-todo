@@ -11,6 +11,7 @@
         <p class="flash" th:if="${flashMessage != null}" th:text="${flashMessage}"></p>
         <p class="flash" th:if="${message != null}" th:text="${message}"></p>
         <a class="btn" th:href="@{/todos/new}">新規登録</a>
+        <a class="btn sub" th:href="@{/calendar}">カレンダーで見る</a>
         <form class="search-bar" method="get" th:action="@{/todos}">
             <label>
                 やることの名前

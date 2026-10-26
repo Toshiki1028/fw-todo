@@ -19,6 +19,12 @@
             <if test="category != null and category != ''">
                 AND category = #{category}
             </if>
+            <if test="from != null">
+                AND due_date >= #{from}
+            </if>
+            <if test="to != null">
+                AND due_date &lt;= #{to}
+            </if>
         </where>
         ORDER BY due_date
         <choose>

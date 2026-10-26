@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>カレンダー</title>
+    <link rel="stylesheet" href="/css/style.css?v=calendar-links-6" th:href="@{/css/style.css(v='calendar-links-6')}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="page-title" th:text="|${displayedMonth.year}年${displayedMonth.monthValue}月|">カレンダー</h1>
+        <nav class="calendar-nav" aria-label="カレンダーの移動">
+            <div class="calendar-nav-months">
+                <a class="link" th:href="@{/calendar(year=${previousMonth.year},month=${previousMonth.monthValue})}">前の月</a>
+                <a class="link" th:href="@{/calendar(year=${nextMonth.year},month=${nextMonth.monthValue})}">次の月</a>
+            </div>
+            <div class="calendar-nav-actions">
+                <a class="link" th:href="@{/todos}">表で見る</a>
+                <a class="link" th:href="@{/todos/new}">新規登録</a>
+            </div>
+        </nav>
+        <table class="calendar-table" th:attr="data-from=${firstDay},data-to=${lastDay}">
+            <thead>
+                <tr>
+                    <th scope="col">日</th>
+                    <th scope="col">月</th>
+                    <th scope="col">火</th>
+                    <th scope="col">水</th>
+                    <th scope="col">木</th>
+                    <th scope="col">金</th>
+                    <th scope="col">土</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="week : ${weeks}">
+                    <th:block th:each="day : ${week}">
+                        <td th:if="${day != null}" th:attr="data-date=${day}" th:text="${day.dayOfMonth}"></td>
+                        <td th:unless="${day != null}" class="calendar-empty"></td>
+                    </th:block>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        const calendar = document.querySelector('.calendar-table');
+        const params = new URLSearchParams({
+            from: calendar.dataset.from,
+            to: calendar.dataset.to
+        });
+        const cells = new Map(
+            [...calendar.querySelectorAll('td[data-date]')]
+                .map(cell => [cell.dataset.date, cell])
+        );
+
+        for (const cell of cells.values()) {
+            const weekday = new Date(cell.dataset.date + 'T00:00:00Z').getUTCDay();
+            if (weekday === 0) cell.classList.add('calendar-sunday');
+            if (weekday === 6) cell.classList.add('calendar-saturday');
+        }
+
+        async function loadTodos() {
+            const res = await fetch('/api/todos?' + params.toString());
+            if (!res.ok) {
+                console.error('やることを取得できませんでした');
+                return;
+            }
+
+            const todos = await res.json();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const counts = new Map();
+            for (const todo of todos) {
+                const cell = cells.get(todo.dueDate);
+                if (!cell) continue;
+
+                const count = counts.get(cell) ?? 0;
+                counts.set(cell, count + 1);
+                if (count >= 3) continue;
+
+                const title = document.createElement('a');
+                title.href = '/todos/' + todo.id + '/edit';
+                title.textContent = todo.title;
+                title.classList.add('link', 'calendar-todo-link');
+                const dueDate = new Date(todo.dueDate + 'T00:00:00');
+                if (dueDate < today && todo.completed !== true) {
+                    title.classList.add('calendar-todo-overdue');
+                }
+                cell.appendChild(title);
+            }
+            for (const [cell, count] of counts) {
+                if (count <= 3) continue;
+
+                const more = document.createElement('div');
+                more.textContent = 'ほか ' + (count - 3) + '件';
+                cell.appendChild(more);
+            }
+        }
+
+        async function loadHolidays() {
+            const res = await fetch('/api/holidays?' + params.toString());
+            if (res.headers.has('X-Holidays-Unavailable')) {
+                const notice = document.createElement('p');
+                notice.textContent = '祝日を取れませんでした';
+                document.querySelector('.page-title').after(notice);
+            }
+            if (!res.ok) {
+                console.error('祝日を取得できませんでした');
+                return;
+            }
+
+            const holidays = await res.json();
+            for (const [date, name] of Object.entries(holidays)) {
+                const cell = cells.get(date);
+                if (!cell) continue;
+
+                cell.classList.add('calendar-holiday');
+                cell.title = name;
+            }
+        }
+
+        loadTodos();
+        loadHolidays();
+    </script>
+</body>
+</html>
