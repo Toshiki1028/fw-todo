@@ -9,10 +9,13 @@
             title,
             category,
             priority,
+            pinned,
             due_date AS dueDate,
-            completed
+            completed,
+            completed_at AS completedAt
         FROM todos
         <where>
+            AND deleted_at IS NULL
             <if test="keyword != null and keyword != ''">
                 AND title LIKE CONCAT('%', #{keyword}, '%')
             </if>
@@ -26,11 +29,49 @@
                 AND due_date &lt;= #{to}
             </if>
         </where>
-        ORDER BY due_date
+        ORDER BY pinned DESC, due_date
         <choose>
-            <when test="order == 'desc'">DESC</when>
-            <otherwise>ASC</otherwise>
+            <when test="order == 'desc'">DESC, id DESC</when>
+            <otherwise>ASC, id ASC</otherwise>
         </choose>
+    </select>
+    <sql id="pageFilters">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND title LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="category != null and category != ''">
+                AND category = #{category}
+            </if>
+            <choose>
+                <when test="trash">
+                    AND deleted_at IS NOT NULL
+                </when>
+                <otherwise>
+                    AND deleted_at IS NULL
+                    <if test="!showCompleted">
+                        AND completed = FALSE
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+    </sql>
+    <select id="searchPage" resultType="com.example.todoapp.Todo">
+        SELECT id, title, category, priority, pinned, due_date AS dueDate, completed,
+               completed_at AS completedAt, deleted_at AS deletedAt
+        FROM todos
+        <include refid="pageFilters"/>
+        ORDER BY pinned DESC, due_date
+        <choose>
+            <when test="order == 'desc'">DESC, id DESC</when>
+            <otherwise>ASC, id ASC</otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="countForPage" resultType="int">
+        SELECT COUNT(*)
+        FROM todos
+        <include refid="pageFilters"/>
     </select>
     <select id="findById" resultType="com.example.todoapp.Todo">
         SELECT
@@ -39,12 +80,15 @@
             detail,
             category,
             priority,
+            pinned,
             due_date AS dueDate,
             completed,
+            completed_at AS completedAt,
             created_at AS createdAt,
             updated_at AS updatedAt
         FROM todos
         WHERE id = #{id}
+          AND deleted_at IS NULL
     </select>
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO todos (title, detail, category, priority, due_date, completed)
@@ -58,11 +102,31 @@
             category = #{category},
             priority = #{priority},
             due_date = #{dueDate},
+            completed_at = CASE
+                WHEN completed = FALSE AND #{completed} = TRUE THEN CURRENT_TIMESTAMP
+                WHEN completed = TRUE AND #{completed} = FALSE THEN NULL
+                ELSE completed_at
+            END,
             completed = #{completed}
         WHERE id = #{id}
+          AND deleted_at IS NULL
     </update>
-    <delete id="deleteById">
-        DELETE FROM todos
+    <update id="markDeleted">
+        UPDATE todos
+        SET deleted_at = CURRENT_TIMESTAMP
         WHERE id = #{id}
-    </delete>
+          AND deleted_at IS NULL
+    </update>
+    <update id="restore">
+        UPDATE todos
+        SET deleted_at = NULL
+        WHERE id = #{id}
+          AND deleted_at IS NOT NULL
+    </update>
+    <update id="togglePinned">
+        UPDATE todos
+        SET pinned = NOT pinned
+        WHERE id = #{id}
+          AND deleted_at IS NULL
+    </update>
 </mapper>

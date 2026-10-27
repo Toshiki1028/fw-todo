@@ -16,11 +16,30 @@ public interface TodoMapper {
             @Param("from") LocalDate from,
             @Param("to") LocalDate to);
 
+    List<Todo> searchPage(
+            @Param("keyword") String keyword,
+            @Param("category") String category,
+            @Param("order") String order,
+            @Param("showCompleted") boolean showCompleted,
+            @Param("trash") boolean trash,
+            @Param("limit") int limit,
+            @Param("offset") int offset);
+
+    int countForPage(
+            @Param("keyword") String keyword,
+            @Param("category") String category,
+            @Param("showCompleted") boolean showCompleted,
+            @Param("trash") boolean trash);
+
     Todo findById(Long id);
 
     int insert(Todo todo);
 
     int update(Todo todo);
 
-    int deleteById(Long id);
+    int markDeleted(Long id);
+
+    int restore(Long id);
+
+    int togglePinned(Long id);
 }

@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>やること一覧</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=20261027-2">
 </head>
 <body>
     <div class="container">
-        <h1 class="page-title">やること一覧</h1>
+        <h1 class="page-title" th:text="${trash == 1 ? '削除済みのやること' : 'やること一覧'}">やること一覧</h1>
         <p class="flash" th:if="${flashMessage != null}" th:text="${flashMessage}"></p>
         <p class="flash" th:if="${message != null}" th:text="${message}"></p>
         <a class="btn" th:href="@{/todos/new}">新規登録</a>
         <a class="btn sub" th:href="@{/calendar}">カレンダーで見る</a>
+        <a class="btn sub" th:if="${trash == 0}" th:href="@{/todos(trash=1)}">削除済みを見る</a>
+        <a class="btn sub" th:if="${trash == 1}" th:href="@{/todos}">一覧に戻る</a>
         <form class="search-bar" method="get" th:action="@{/todos}">
             <label>
                 やることの名前
@@ -28,14 +30,20 @@
                     <option value="就職活動" th:selected="${category == '就職活動'}">就職活動</option>
                 </select>
             </label>
+            <label th:if="${trash == 0}">
+                <input type="checkbox" name="showCompleted" value="true" th:checked="${showCompleted}">
+                完了したものも表示する
+            </label>
+            <input type="hidden" name="trash" value="1" th:if="${trash == 1}">
             <input type="hidden" name="order" th:value="${order}">
             <button class="btn" type="submit">絞り込む</button>
             <div>
-                <a class="link" th:href="@{/todos(keyword=${keyword}, category=${category}, order='asc')}">期限が近い順</a><br>
-                <a class="link" th:href="@{/todos(keyword=${keyword}, category=${category}, order='desc')}">期限が遠い順</a>
+                <a class="link" th:href="@{/todos(keyword=${keyword}, category=${category}, order='asc', showCompleted=${showCompleted}, page=${currentPage}, trash=${trash})}">期限が近い順</a><br>
+                <a class="link" th:href="@{/todos(keyword=${keyword}, category=${category}, order='desc', showCompleted=${showCompleted}, page=${currentPage}, trash=${trash})}">期限が遠い順</a>
             </div>
         </form>
-        <p th:if="${#lists.isEmpty(todos)}">まだ1件も登録されていません</p>
+        <p th:if="${#lists.isEmpty(todos)}"
+           th:text="${trash == 1 ? '削除済みのやることはありません' : '表示できるやることはありません'}">表示できるやることはありません</p>
         <table class="todo-table" th:unless="${#lists.isEmpty(todos)}">
             <thead>
                 <tr>
@@ -48,16 +56,49 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="todo : ${todos}">
-                    <td th:text="${todo.title}">やること</td>
+                <tr th:each="todo : ${todos}"
+                    th:classappend="${trash == 0 and todo.dueDate != null and todo.dueDate.isBefore(today) and todo.completed != true} ? 'todo-overdue' : ''">
+                    <td><span th:if="${todo.pinned}" aria-label="印付き">📌 </span><span th:text="${todo.title}">やること</span></td>
                     <td th:text="${todo.category}">ジャンル</td>
-                    <td th:text="${todo.priority == 1 ? '高' : (todo.priority == 2 ? '中' : (todo.priority == 3 ? '低' : ''))}">優先度</td>
+                    <td>
+                        <span th:if="${todo.priority == 1}" class="priority-high-marker" aria-hidden="true">★</span><span th:text="${todo.priority == 1 ? '高' : (todo.priority == 2 ? '中' : (todo.priority == 3 ? '低' : ''))}">優先度</span>
+                    </td>
                     <td th:text="${todo.dueDate}">期限</td>
-                    <td th:text="${todo.completed ? '完了' : '未完了'}">状態</td>
-                    <td><a class="link" th:href="@{/todos/{id}/edit(id=${todo.id})}">編集</a> <a class="link" th:href="@{/todos/{id}/delete(id=${todo.id})}">削除</a></td>
+                    <td>
+                        <span th:text="${trash == 1 ? '削除済み' : (todo.completed ? '完了' : '未完了')}">状態</span>
+                        <time th:if="${trash == 1 and todo.deletedAt != null}"
+                              th:datetime="${todo.deletedAt}"
+                              th:text="${#temporals.format(todo.deletedAt, 'yyyy-MM-dd HH:mm')}"></time>
+                        <time th:if="${trash == 0 and todo.completed == true and todo.completedAt != null}"
+                              th:datetime="${todo.completedAt}"
+                              th:text="${#temporals.format(todo.completedAt, 'yyyy-MM-dd HH:mm')}"></time>
+                    </td>
+                    <td th:if="${trash == 0}">
+                        <a class="link" th:href="@{/todos/{id}/edit(id=${todo.id})}">編集</a>
+                        <a class="link" th:href="@{/todos/{id}/delete(id=${todo.id})}">削除</a>
+                        <form th:action="@{/todos/{id}/pin(id=${todo.id})}" method="post">
+                            <input type="hidden" name="keyword" th:value="${keyword}">
+                            <input type="hidden" name="category" th:value="${category}">
+                            <input type="hidden" name="order" th:value="${order}">
+                            <input type="hidden" name="showCompleted" th:value="${showCompleted}">
+                            <input type="hidden" name="page" th:value="${currentPage}">
+                            <button class="btn sub" type="submit" th:text="${todo.pinned ? '印を外す' : '印を付ける'}">印を付ける</button>
+                        </form>
+                    </td>
+                    <td th:if="${trash == 1}">
+                        <form th:action="@{/todos/{id}/restore(id=${todo.id})}" method="post">
+                            <button class="btn" type="submit">戻す</button>
+                        </form>
+                    </td>
                 </tr>
             </tbody>
         </table>
+        <nav class="pagination" th:if="${totalPages > 1}" aria-label="ページの移動">
+            <a class="link" th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
+               th:href="@{/todos(keyword=${keyword}, category=${category}, order=${order}, showCompleted=${showCompleted}, page=${pageNumber}, trash=${trash})}"
+               th:attr="aria-current=${pageNumber == currentPage ? 'page' : null}"
+               th:text="${pageNumber}">1</a>
+        </nav>
     </div>
 </body>
 </html>

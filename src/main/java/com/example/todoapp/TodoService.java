@@ -24,6 +24,15 @@ public class TodoService {
         return todoMapper.search(keyword, category, order, from, to);
     }
 
+    public List<Todo> searchPage(String keyword, String category, String order,
+            boolean showCompleted, boolean trash, int limit, int offset) {
+        return todoMapper.searchPage(keyword, category, order, showCompleted, trash, limit, offset);
+    }
+
+    public int countForPage(String keyword, String category, boolean showCompleted, boolean trash) {
+        return todoMapper.countForPage(keyword, category, showCompleted, trash);
+    }
+
     public Todo findById(Long id) {
         return todoMapper.findById(id);
     }
@@ -41,8 +50,20 @@ public class TodoService {
     }
 
     public int delete(Long id) {
-        int result = todoMapper.deleteById(id);
+        int result = todoMapper.markDeleted(id);
         log.info("Todo deleted: id={}", id);
+        return result;
+    }
+
+    public int restore(Long id) {
+        int result = todoMapper.restore(id);
+        log.info("Todo restored: id={}", id);
+        return result;
+    }
+
+    public int togglePinned(Long id) {
+        int result = todoMapper.togglePinned(id);
+        log.info("Todo pin toggled: id={}", id);
         return result;
     }
 }

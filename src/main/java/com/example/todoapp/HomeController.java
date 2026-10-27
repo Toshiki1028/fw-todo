@@ -1,5 +1,7 @@
 package com.example.todoapp;
 
+import java.time.LocalDate;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -15,6 +17,7 @@ import jakarta.validation.Valid;
 @Controller
 public class HomeController {
 
+    private static final int PAGE_SIZE = 10;
     private final TodoService todoService;
 
     public HomeController(TodoService todoService) {
@@ -32,12 +35,26 @@ public class HomeController {
             @RequestParam(name = "keyword", defaultValue = "") String keyword,
             @RequestParam(name = "category", defaultValue = "") String category,
             @RequestParam(name = "order", defaultValue = "asc") String order,
+            @RequestParam(name = "showCompleted", defaultValue = "false") boolean showCompleted,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "trash", defaultValue = "0") String trash,
             Model model) {
         String sortOrder = "desc".equals(order) ? "desc" : "asc";
-        model.addAttribute("todos", todoService.search(keyword, category, sortOrder));
+        boolean viewingTrash = "1".equals(trash);
+        int totalCount = todoService.countForPage(keyword, category, showCompleted, viewingTrash);
+        int totalPages = (totalCount + PAGE_SIZE - 1) / PAGE_SIZE;
+        int currentPage = Math.max(1, Math.min(page, Math.max(1, totalPages)));
+        int offset = (currentPage - 1) * PAGE_SIZE;
+        model.addAttribute("todos", todoService.searchPage(
+                keyword, category, sortOrder, showCompleted, viewingTrash, PAGE_SIZE, offset));
+        model.addAttribute("today", LocalDate.now());
         model.addAttribute("keyword", keyword);
         model.addAttribute("category", category);
         model.addAttribute("order", sortOrder);
+        model.addAttribute("showCompleted", showCompleted);
+        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("trash", viewingTrash ? 1 : 0);
         return "todos";
     }
 
@@ -121,8 +138,34 @@ public class HomeController {
 
     @PostMapping("/todos/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        todoService.delete(id);
-        redirectAttributes.addFlashAttribute("message", "削除しました");
+        int deleted = todoService.delete(id);
+        redirectAttributes.addFlashAttribute("message", deleted > 0 ? "削除しました" : "見つかりませんでした");
+        return "redirect:/todos";
+    }
+
+    @PostMapping("/todos/{id}/restore")
+    public String restore(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        int restored = todoService.restore(id);
+        redirectAttributes.addFlashAttribute("message", restored > 0 ? "戻しました" : "見つかりませんでした");
+        return "redirect:/todos?trash=1";
+    }
+
+    @PostMapping("/todos/{id}/pin")
+    public String togglePin(
+            @PathVariable Long id,
+            @RequestParam(name = "keyword", defaultValue = "") String keyword,
+            @RequestParam(name = "category", defaultValue = "") String category,
+            @RequestParam(name = "order", defaultValue = "asc") String order,
+            @RequestParam(name = "showCompleted", defaultValue = "false") boolean showCompleted,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            RedirectAttributes redirectAttributes) {
+        int changed = todoService.togglePinned(id);
+        redirectAttributes.addAttribute("keyword", keyword);
+        redirectAttributes.addAttribute("category", category);
+        redirectAttributes.addAttribute("order", "desc".equals(order) ? "desc" : "asc");
+        redirectAttributes.addAttribute("showCompleted", showCompleted);
+        redirectAttributes.addAttribute("page", page);
+        redirectAttributes.addFlashAttribute("message", changed > 0 ? "印を切り替えました" : "見つかりませんでした");
         return "redirect:/todos";
     }
 }
