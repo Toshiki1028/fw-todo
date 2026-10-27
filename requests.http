@@ -77,3 +77,39 @@ DELETE http://localhost:8080/api/todos/16
 
 ### 13. テスト用Todoを削除（企業情報）
 DELETE http://localhost:8080/api/todos/17
+
+### 14. MCPの窓口を確かめる
+ POST http://localhost:8080/mcp
+
+### 15. 窓口と会話を始める
+POST http://localhost:8080/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2025-06-18",
+    "capabilities": {},
+    "clientInfo": { "name": "requests.http", "version": "1.0" }
+  }
+}
+
+### 16. 道具の一覧をもらう
+POST http://localhost:8080/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Mcp-Session-Id: 0e8e6684-85b3-489d-a6bc-cae88bb3d877
+
+{ "jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {} }
+
+### 17. 道具を1つ呼んでみる
+POST http://localhost:8080/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Mcp-Session-Id: b4c11631-3be8-45a6-9271-23cfd4631682
+
+{ "jsonrpc": "2.0", "id": 3, "method": "tools/call",
+  "params": { "name": "list_todos", "arguments": {} } }
