@@ -1,23 +1,40 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>カレンダー</title>
-    <link rel="stylesheet" href="/css/style.css?v=calendar-links-6" th:href="@{/css/style.css(v='calendar-links-6')}">
+    <link rel="stylesheet" href="/css/style.css?v=calendar-toolbar-2"
+        th:href="@{/css/style.css(v='calendar-toolbar-2')}">
 </head>
+
 <body>
     <div class="container">
-        <h1 class="page-title" th:text="|${displayedMonth.year}年${displayedMonth.monthValue}月|">カレンダー</h1>
-        <nav class="calendar-nav" aria-label="カレンダーの移動">
-            <div class="calendar-nav-months">
-                <a class="link" th:href="@{/calendar(year=${previousMonth.year},month=${previousMonth.monthValue})}">前の月</a>
-                <a class="link" th:href="@{/calendar(year=${nextMonth.year},month=${nextMonth.monthValue})}">次の月</a>
-            </div>
+        <div class="calendar-toolbar">
+            <nav class="calendar-period" aria-label="カレンダーの移動">
+                <a class="btn sub calendar-step calendar-step-month" aria-label="前の月" title="前の月"
+                    th:href="@{/calendar(year=${previousMonth.year},month=${previousMonth.monthValue})}">‹</a>
+                <button type="button" class="btn sub calendar-step calendar-step-week" id="previous-week"
+                    aria-label="前の週" title="前の週" hidden>‹</button>
+                <h1 class="page-title" th:text="|${displayedMonth.year}年${displayedMonth.monthValue}月|">カレンダー</h1>
+                <a class="btn sub calendar-step calendar-step-month" aria-label="次の月" title="次の月"
+                    th:href="@{/calendar(year=${nextMonth.year},month=${nextMonth.monthValue})}">›</a>
+                <button type="button" class="btn sub calendar-step calendar-step-week" id="next-week"
+                    aria-label="次の週" title="次の週" hidden>›</button>
+            </nav>
             <div class="calendar-nav-actions">
-                <a class="link" th:href="@{/todos}">表で見る</a>
-                <a class="link" th:href="@{/todos/new}">新規登録</a>
+                <a class="btn" th:href="@{/todos/new}">＋ 新規登録</a>
+                <div class="calendar-view-switch">
+                    <button type="button" class="btn" id="month-view-btn">月</button>
+                    <button type="button" class="btn sub" id="week-view-btn">週</button>
+                </div>
             </div>
-        </nav>
+            <nav class="page-switch" aria-label="表示画面の切り替え">
+                <a th:href="@{/todos}"><span aria-hidden="true">≡</span> 一覧</a>
+                <a th:href="@{/calendar}" aria-current="page"><span aria-hidden="true">▦</span> カレンダー</a>
+            </nav>
+        </div>
+        <div class="calendar-scroll">
         <table class="calendar-table" th:attr="data-from=${firstDay},data-to=${lastDay}">
             <thead>
                 <tr>
@@ -33,74 +50,369 @@
             <tbody>
                 <tr th:each="week : ${weeks}">
                     <th:block th:each="day : ${week}">
-                        <td th:if="${day != null}" th:attr="data-date=${day}" th:text="${day.dayOfMonth}"></td>
+                        <td th:if="${day != null}" th:attr="data-date=${day}">
+                            <div class="calendar-day-header">
+                                <span class="calendar-day-date" th:text="${day.dayOfMonth}"></span>
+                            </div>
+                        </td>
                         <td th:unless="${day != null}" class="calendar-empty"></td>
                     </th:block>
                 </tr>
             </tbody>
         </table>
+        </div>
+        <dialog class="calendar-todo-dialog" id="calendar-todo-dialog" aria-labelledby="calendar-todo-title">
+            <div class="calendar-todo-dialog-header">
+                <h2 id="calendar-todo-title"></h2>
+                <button type="button" class="calendar-todo-close" id="calendar-todo-close" aria-label="閉じる">×</button>
+            </div>
+            <div class="calendar-todo-dialog-content" id="calendar-todo-content"></div>
+        </dialog>
+        <dialog class="calendar-todo-dialog" id="calendar-todo-detail-dialog" aria-labelledby="calendar-todo-detail-title">
+            <div class="calendar-todo-dialog-header">
+                <h2 id="calendar-todo-detail-title"></h2>
+                <button type="button" class="calendar-todo-close" id="calendar-todo-detail-close" aria-label="閉じる">×</button>
+            </div>
+            <div class="calendar-todo-dialog-content" id="calendar-todo-detail-content"></div>
+        </dialog>
+        <div class="calendar-footer">
+            <p class="weather-credit">東京の天気: <a class="link" href="https://open-meteo.com/">Open-Meteo</a></p>
+            <button type="button" class="btn sub" id="fortune-toggle" aria-expanded="false"
+                aria-controls="fortune-panel">🔮 今日の運勢</button>
+        </div>
+        <section class="fortune-panel" id="fortune-panel" aria-label="簡易三柱・今日の運勢" hidden>
+            <div class="fortune-top">
+                <strong>🔮 今日の運勢</strong>
+                <button type="button" class="btn sub fortune-small-btn" id="fortune-settings-toggle" hidden>⚙ 設定</button>
+            </div>
+            <form id="fortune-form" hidden>
+                <label for="fortune-birth">生年月日を入力してください</label>
+                <div class="fortune-form-row">
+                    <input id="fortune-birth" type="date" min="1900-01-07" max="2052-12-31" autocomplete="off" required>
+                    <button type="submit" class="btn">保存して占う</button>
+                    <button type="button" class="btn sub fortune-small-btn" id="fortune-cancel" hidden>キャンセル</button>
+                </div>
+                <small>日付は日本時間として扱います。対応範囲：1900年1月7日〜2052年12月31日。節入り当日は出生時刻がないため判定できません。</small>
+            </form>
+            <div id="fortune-result" role="status" aria-live="polite" hidden>
+                <div>総合運：<span id="fortune-stars"></span></div>
+                <p id="fortune-comment"></p>
+                <div>ラッキーカラーは『<span id="fortune-color"></span>』</div>
+            </div>
+            <div class="fortune-settings" id="fortune-settings" hidden>
+                <button type="button" class="btn sub fortune-small-btn" id="fortune-change">生年月日を変更する</button>
+                <button type="button" class="btn sub fortune-small-btn" id="fortune-delete">保存済みの生年月日を削除する</button>
+                <button type="button" class="btn sub fortune-small-btn" id="fortune-settings-close">設定画面を閉じる</button>
+            </div>
+            <p id="fortune-status" role="status" aria-live="polite" hidden></p>
+            <p class="fortune-error" id="fortune-error" role="alert" hidden></p>
+            <div class="fortune-note">
+                <span>四柱推命をもとに今日の運勢を独自に算出しています。</span>
+                <button type="button" class="fortune-license-toggle" id="fortune-license-toggle"
+                    aria-expanded="false" aria-controls="fortune-license-details">データ・ライセンス情報</button>
+                <div class="fortune-license-details" id="fortune-license-details" hidden>
+                    <p>娯楽用の簡易占いです。科学的に未来を予測するものではありません。</p>
+                    <p>節入り時刻データ：Chujia Kuang, Chinese Calendar Open Datasets v1.1.0</p>
+                    <p>出典：<a class="link" href="https://doi.org/10.5281/zenodo.22788686"
+                            target="_blank" rel="noopener noreferrer">https://doi.org/10.5281/zenodo.22788686</a></p>
+                    <p>ライセンス：<a class="link" href="https://creativecommons.org/licenses/by/4.0/"
+                            target="_blank" rel="noopener noreferrer">CC BY 4.0</a></p>
+                    <p>加工内容：元データから12の節入り時刻を抽出し、UTCから日本時間に変換して形式を変更しています。</p>
+                </div>
+            </div>
+        </section>
     </div>
+    <script src="/fortune.js" th:src="@{/fortune.js}"></script>
     <script>
         const calendar = document.querySelector('.calendar-table');
-        const params = new URLSearchParams({
-            from: calendar.dataset.from,
-            to: calendar.dataset.to
-        });
-        const cells = new Map(
-            [...calendar.querySelectorAll('td[data-date]')]
-                .map(cell => [cell.dataset.date, cell])
-        );
+        const tbody = calendar.tBodies[0];
+        const monthRows = [...tbody.rows];
+        const monthButton = document.getElementById('month-view-btn');
+        const weekButton = document.getElementById('week-view-btn');
+        const calendarPeriod = document.querySelector('.calendar-period');
+        const periodTitle = calendarPeriod.querySelector('.page-title');
+        const monthArrows = calendarPeriod.querySelectorAll('.calendar-step-month');
+        const weekArrows = calendarPeriod.querySelectorAll('.calendar-step-week');
+        const monthTitle = periodTitle.textContent;
+        const displayedMonth = calendar.dataset.from.slice(0, 7);
+        const query = new URLSearchParams(location.search);
+        let currentView = 'month';
+        let weekStart;
 
-        for (const cell of cells.values()) {
-            const weekday = new Date(cell.dataset.date + 'T00:00:00Z').getUTCDay();
-            if (weekday === 0) cell.classList.add('calendar-sunday');
-            if (weekday === 6) cell.classList.add('calendar-saturday');
+        function formatDate(date) {
+            return date.getUTCFullYear() + '-'
+                + String(date.getUTCMonth() + 1).padStart(2, '0') + '-'
+                + String(date.getUTCDate()).padStart(2, '0');
         }
 
-        async function loadTodos() {
-            const res = await fetch('/api/todos?' + params.toString());
-            if (!res.ok) {
+        function parseDate(value) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return null;
+            const date = new Date(value + 'T00:00:00Z');
+            return !Number.isNaN(date.getTime()) && formatDate(date) === value ? date : null;
+        }
+
+        function addDays(date, days) {
+            const result = new Date(date);
+            result.setUTCDate(result.getUTCDate() + days);
+            return result;
+        }
+
+        function getWeekStart(date) {
+            return addDays(date, -date.getUTCDay());
+        }
+
+        function getWeekDates(start) {
+            return Array.from({ length: 7 }, (_, index) => addDays(start, index));
+        }
+
+        function formatWeekRange(start, end) {
+            const sameYear = start.getUTCFullYear() === end.getUTCFullYear();
+            const sameMonth = sameYear && start.getUTCMonth() === end.getUTCMonth();
+            const first = (sameYear ? '' : start.getUTCFullYear() + '年')
+                + (start.getUTCMonth() + 1) + '月' + start.getUTCDate() + '日';
+            const last = (sameYear ? '' : end.getUTCFullYear() + '年')
+                + (sameMonth ? '' : (end.getUTCMonth() + 1) + '月') + end.getUTCDate() + '日';
+            return first + '〜' + last;
+        }
+
+        function dateCells(root) {
+            const cells = new Map([...root.querySelectorAll('td[data-date]')]
+                .map(cell => [cell.dataset.date, cell]));
+            for (const cell of cells.values()) {
+                const weekday = parseDate(cell.dataset.date).getUTCDay();
+                if (weekday === 0) cell.classList.add('calendar-sunday');
+                if (weekday === 6) cell.classList.add('calendar-saturday');
+            }
+            return cells;
+        }
+
+        function loadCalendarData(from, to, cells) {
+            const params = new URLSearchParams({ from, to });
+            loadTodos(params, cells);
+            loadHolidays(params, cells);
+            loadWeather(params, cells);
+        }
+
+        function saveView() {
+            const url = new URL(location.href);
+            if (currentView === 'week') {
+                url.searchParams.set('view', 'week');
+                url.searchParams.set('date', formatDate(weekStart));
+            } else {
+                url.searchParams.delete('view');
+                url.searchParams.delete('date');
+            }
+            history.replaceState(null, '', url);
+        }
+
+        function showWeek(start) {
+            currentView = 'week';
+            weekStart = getWeekStart(start);
+            const dates = getWeekDates(weekStart);
+            const row = document.createElement('tr');
+            for (const date of dates) {
+                const cell = document.createElement('td');
+                cell.dataset.date = formatDate(date);
+                const header = document.createElement('div');
+                header.className = 'calendar-day-header';
+                const dayLabel = document.createElement('span');
+                dayLabel.className = 'calendar-day-date';
+                dayLabel.textContent = date.getUTCDate() === 1
+                    ? (date.getUTCMonth() + 1) + '/1' : String(date.getUTCDate());
+                header.appendChild(dayLabel);
+                cell.appendChild(header);
+                row.appendChild(cell);
+            }
+            tbody.replaceChildren(row);
+            calendar.classList.add('calendar-week-view');
+            periodTitle.textContent = formatWeekRange(dates[0], dates[6]);
+            calendarPeriod.classList.add('is-week');
+            monthArrows.forEach(arrow => { arrow.hidden = true; });
+            weekArrows.forEach(arrow => { arrow.hidden = false; });
+            monthButton.classList.remove('active');
+            weekButton.classList.add('active');
+            saveView();
+            loadCalendarData(formatDate(dates[0]), formatDate(dates[6]), dateCells(row));
+        }
+
+        function showMonth() {
+            if (currentView === 'month') return;
+            const month = getWeekDates(weekStart).some(date => formatDate(date).startsWith(displayedMonth))
+                ? displayedMonth : formatDate(weekStart).slice(0, 7);
+            if (month !== displayedMonth) {
+                const url = new URL(location.href);
+                url.searchParams.set('year', month.slice(0, 4));
+                url.searchParams.set('month', Number(month.slice(5)));
+                url.searchParams.delete('view');
+                url.searchParams.delete('date');
+                location.assign(url);
+                return;
+            }
+            currentView = 'month';
+            tbody.replaceChildren(...monthRows);
+            calendar.classList.remove('calendar-week-view');
+            periodTitle.textContent = monthTitle;
+            calendarPeriod.classList.remove('is-week');
+            monthArrows.forEach(arrow => { arrow.hidden = false; });
+            weekArrows.forEach(arrow => { arrow.hidden = true; });
+            monthButton.classList.add('active');
+            weekButton.classList.remove('active');
+            saveView();
+        }
+
+        document.getElementById('previous-week').addEventListener('click', () => showWeek(addDays(weekStart, -7)));
+        document.getElementById('next-week').addEventListener('click', () => showWeek(addDays(weekStart, 7)));
+        monthButton.addEventListener('click', showMonth);
+        weekButton.addEventListener('click', () => {
+            const today = new Date();
+            const localToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+            const anchor = formatDate(localToday).startsWith(displayedMonth)
+                ? localToday : parseDate(calendar.dataset.from);
+            showWeek(anchor);
+        });
+
+        const todoDataByCell = new WeakMap();
+
+        if (query.get('view') === 'week' && parseDate(query.get('date'))) {
+            showWeek(parseDate(query.get('date')));
+        } else {
+            monthButton.classList.add('active');
+            loadCalendarData(calendar.dataset.from, calendar.dataset.to, dateCells(tbody));
+        }
+
+        const todoDialog = document.getElementById('calendar-todo-dialog');
+        const todoDialogContent = document.getElementById('calendar-todo-content');
+        const todoDetailDialog = document.getElementById('calendar-todo-detail-dialog');
+        const todoDetailContent = document.getElementById('calendar-todo-detail-content');
+        let activeDayCell = null;
+        document.getElementById('calendar-todo-close').addEventListener('click', () => todoDialog.close());
+        document.getElementById('calendar-todo-detail-close').addEventListener('click', () => todoDetailDialog.close());
+        todoDialog.addEventListener('close', () => { activeDayCell = null; });
+        for (const dialog of [todoDialog, todoDetailDialog]) {
+            dialog.addEventListener('click', event => {
+                if (event.target !== dialog) return;
+                const bounds = dialog.getBoundingClientRect();
+                if (event.clientX < bounds.left || event.clientX > bounds.right ||
+                    event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
+            });
+        }
+
+        function createTodoDetails(todo) {
+            const item = document.createElement('article');
+            item.className = 'calendar-todo-item';
+            const details = document.createElement('dl');
+            details.className = 'calendar-todo-details';
+            const fields = [
+                ['ジャンル', todo.category || '—'],
+                ['優先度', ({ 1: '高', 2: '中', 3: '低' })[todo.priority] || '—'],
+                ['期限', todo.dueDate || '—'],
+                ['状態', todo.completed ? '完了' : '未完了'],
+                ['メモ', todo.detail || '—']
+            ];
+            for (const [label, value] of fields) {
+                const term = document.createElement('dt');
+                term.textContent = label;
+                const description = document.createElement('dd');
+                description.textContent = value;
+                details.append(term, description);
+            }
+            item.appendChild(details);
+            const edit = document.createElement('a');
+            edit.className = 'btn';
+            edit.href = '/todos/' + todo.id + '/edit';
+            edit.textContent = '編集する';
+            item.appendChild(edit);
+            return item;
+        }
+
+        function showTodoDetails(todo) {
+            document.getElementById('calendar-todo-detail-title').textContent = todo.title ?? '';
+            todoDetailContent.replaceChildren(createTodoDetails(todo));
+            todoDetailDialog.showModal();
+        }
+
+        function showDayDetails(cell) {
+            activeDayCell = cell;
+            document.getElementById('calendar-todo-title').textContent = cell.dataset.date + ' のTodo';
+            const dayTodos = todoDataByCell.get(cell);
+            if (dayTodos?.length) {
+                const list = document.createElement('ul');
+                list.className = 'calendar-todo-list';
+                for (const todo of dayTodos) {
+                    const item = document.createElement('li');
+                    item.textContent = todo.title ?? '';
+                    list.appendChild(item);
+                }
+                todoDialogContent.replaceChildren(list);
+            } else {
+                const message = document.createElement('p');
+                message.textContent = dayTodos === null ? 'Todoを読み込み中です' :
+                    dayTodos === undefined ? 'Todoを取得できませんでした' : 'この日のTodoはありません';
+                todoDialogContent.replaceChildren(message);
+            }
+            if (!todoDialog.open) todoDialog.showModal();
+        }
+
+        tbody.addEventListener('click', event => {
+            const cell = event.target.closest('td[data-date]');
+            if (cell) showDayDetails(cell);
+        });
+
+        async function loadTodos(params, cells) {
+            for (const cell of cells.values()) todoDataByCell.set(cell, null);
+            let todos;
+            try {
+                const res = await fetch('/api/todos?' + params.toString());
+                if (!res.ok) throw new Error('Todo API error');
+                todos = await res.json();
+            } catch (error) {
                 console.error('やることを取得できませんでした');
+                for (const cell of cells.values()) todoDataByCell.set(cell, undefined);
+                if (todoDialog.open && activeDayCell &&
+                    cells.get(activeDayCell.dataset.date) === activeDayCell) showDayDetails(activeDayCell);
                 return;
             }
 
-            const todos = await res.json();
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const counts = new Map();
+            const todosByCell = new Map();
+            for (const cell of cells.values()) todosByCell.set(cell, []);
             for (const todo of todos) {
                 const cell = cells.get(todo.dueDate);
                 if (!cell) continue;
-
-                const count = counts.get(cell) ?? 0;
-                counts.set(cell, count + 1);
-                if (count >= 3) continue;
-
-                const title = document.createElement('a');
-                title.href = '/todos/' + todo.id + '/edit';
-                title.textContent = todo.title;
-                title.classList.add('link', 'calendar-todo-link');
-                const dueDate = new Date(todo.dueDate + 'T00:00:00');
-                if (dueDate < today && todo.completed !== true) {
-                    title.classList.add('calendar-todo-overdue');
-                }
-                cell.appendChild(title);
+                todosByCell.get(cell).push(todo);
             }
-            for (const [cell, count] of counts) {
-                if (count <= 3) continue;
+            for (const [cell, dayTodos] of todosByCell) {
+                todoDataByCell.set(cell, dayTodos);
 
-                const more = document.createElement('div');
-                more.textContent = 'ほか ' + (count - 3) + '件';
-                cell.appendChild(more);
+                for (const todo of dayTodos.slice(0, 5)) {
+                    const title = document.createElement('button');
+                    title.type = 'button';
+                    title.textContent = todo.title;
+                    title.classList.add('calendar-todo-link');
+                    title.addEventListener('click', event => {
+                        event.stopPropagation();
+                        showTodoDetails(todo);
+                    });
+                    const dueDate = new Date(todo.dueDate + 'T00:00:00');
+                    if (dueDate < today && todo.completed !== true) {
+                        title.classList.add('calendar-todo-overdue');
+                    }
+                    cell.appendChild(title);
+                }
+                if (todoDialog.open && activeDayCell === cell) showDayDetails(cell);
             }
         }
 
-        async function loadHolidays() {
+        async function loadHolidays(params, cells) {
             const res = await fetch('/api/holidays?' + params.toString());
             if (res.headers.has('X-Holidays-Unavailable')) {
-                const notice = document.createElement('p');
-                notice.textContent = '祝日を取れませんでした';
-                document.querySelector('.page-title').after(notice);
+                if (!document.getElementById('holiday-unavailable')) {
+                    const notice = document.createElement('p');
+                    notice.id = 'holiday-unavailable';
+                    notice.textContent = '祝日を取れませんでした';
+                    document.querySelector('.calendar-toolbar').after(notice);
+                }
             }
             if (!res.ok) {
                 console.error('祝日を取得できませんでした');
@@ -117,8 +429,235 @@
             }
         }
 
-        loadTodos();
-        loadHolidays();
+        function weatherIcon(description) {
+            const types = {
+                '晴れ': '晴れ', '曇り': '曇り', '雨': '雨', '小雨': '雨', '雷雨': '雨', '雪': '雪'
+            };
+            const icons = { '晴れ': '☀️', '曇り': '☁️', '雨': '🌧️', '雪': '❄️' };
+            const parts = description.split(/(時々|のち)/);
+            if (parts.length === 1) return icons[types[description]] || '';
+            if (parts.length !== 3 || !types[parts[0]] || !types[parts[2]]) return '';
+
+            const first = types[parts[0]];
+            const second = types[parts[2]];
+            if (parts[1] === 'のち') return icons[first] + '→' + icons[second];
+
+            const pair = [first, second].sort().join('/');
+            const occasionalIcons = {
+                '晴れ/曇り': '🌤️',
+                '晴れ/雨': '🌦️',
+                '曇り/雨': '🌧️',
+                '曇り/雪': '🌨️'
+            };
+            return occasionalIcons[pair] || '';
+        }
+
+        async function loadWeather(params, cells) {
+            try {
+                const res = await fetch('/api/weather?' + params.toString());
+                if (!res.ok) return;
+
+                const weather = await res.json();
+                for (const [date, description] of Object.entries(weather)) {
+                    const cell = cells.get(date);
+                    if (!cell || !description) continue;
+
+                    const icon = weatherIcon(description);
+                    if (icon) {
+                        const mark = document.createElement('span');
+                        mark.className = 'calendar-weather-icon';
+                        if (icon.includes('→')) mark.classList.add('calendar-weather-icon-multiple');
+                        mark.textContent = icon;
+                        mark.title = description;
+                        cell.querySelector('.calendar-day-header').appendChild(mark);
+                    }
+                }
+            } catch (error) {
+                console.error('天気を取得できませんでした', error);
+            }
+        }
+
+        const fortuneToggle = document.getElementById('fortune-toggle');
+        const fortunePanel = document.getElementById('fortune-panel');
+        const fortuneLicenseToggle = document.getElementById('fortune-license-toggle');
+        const fortuneLicenseDetails = document.getElementById('fortune-license-details');
+        fortuneLicenseToggle.addEventListener('click', () => {
+            fortuneLicenseDetails.hidden = !fortuneLicenseDetails.hidden;
+            fortuneLicenseToggle.setAttribute('aria-expanded', String(!fortuneLicenseDetails.hidden));
+        });
+        const fortuneForm = document.getElementById('fortune-form');
+        const birthInput = document.getElementById('fortune-birth');
+        const fortuneResult = document.getElementById('fortune-result');
+        const fortuneSettingsToggle = document.getElementById('fortune-settings-toggle');
+        const fortuneSettings = document.getElementById('fortune-settings');
+        const fortuneCancel = document.getElementById('fortune-cancel');
+        const fortuneStatus = document.getElementById('fortune-status');
+        const fortuneError = document.getElementById('fortune-error');
+        const birthKey = 'todoapp.fortune.birthDate';
+        let termsPromise;
+        let renderedDay;
+        let viewVersion = 0;
+
+        function savedBirthDate() {
+            try {
+                return localStorage.getItem(birthKey);
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function showFortuneMessage(element, message) {
+            element.textContent = message;
+            element.hidden = !message;
+        }
+
+        function showBirthForm(isChange) {
+            viewVersion++;
+            fortuneForm.reset();
+            birthInput.value = '';
+            fortuneForm.hidden = false;
+            fortuneResult.hidden = true;
+            fortuneSettings.hidden = true;
+            fortuneSettingsToggle.hidden = true;
+            fortuneCancel.hidden = !isChange;
+            showFortuneMessage(fortuneStatus, '');
+            showFortuneMessage(fortuneError, '');
+        }
+
+        function loadTermData() {
+            if (!termsPromise) {
+                termsPromise = fetch('/fortune-terms.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error();
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (!data.termsJst) throw new Error();
+                        return data.termsJst;
+                    })
+                    .catch(() => {
+                        termsPromise = null;
+                        throw new Error('節入りデータを読み込めません。');
+                    });
+            }
+            return termsPromise;
+        }
+
+        async function calculateToday(birthDate) {
+            const today = FortuneCalculator.todayInJapan();
+            if (birthDate > today) throw new Error('未来の生年月日は指定できません。');
+            const terms = await loadTermData();
+            const pillars = FortuneCalculator.calculatePillars(birthDate, terms);
+            return { today, reading: FortuneCalculator.calculateFortune(pillars, today) };
+        }
+
+        function displayFortune(result) {
+            document.getElementById('fortune-stars').textContent =
+                '★'.repeat(result.reading.stars) + '☆'.repeat(5 - result.reading.stars);
+            document.getElementById('fortune-comment').textContent = result.reading.comment;
+            const colorName = document.getElementById('fortune-color');
+            colorName.textContent = result.reading.color;
+            colorName.dataset.color = result.reading.color;
+            renderedDay = result.today;
+            fortuneForm.reset();
+            fortuneForm.hidden = true;
+            fortuneResult.hidden = false;
+            fortuneSettings.hidden = true;
+            fortuneSettingsToggle.hidden = false;
+            showFortuneMessage(fortuneStatus, '');
+            showFortuneMessage(fortuneError, '');
+        }
+
+        async function showSavedFortune(birthDate) {
+            const version = ++viewVersion;
+            fortuneForm.hidden = true;
+            fortuneResult.hidden = true;
+            fortuneSettings.hidden = true;
+            fortuneSettingsToggle.hidden = false;
+            showFortuneMessage(fortuneError, '');
+            showFortuneMessage(fortuneStatus, '運勢を計算中...');
+            try {
+                const result = await calculateToday(birthDate);
+                if (version === viewVersion && !fortunePanel.hidden) displayFortune(result);
+            } catch (error) {
+                if (version === viewVersion && !fortunePanel.hidden) {
+                    showFortuneMessage(fortuneStatus, '');
+                    showFortuneMessage(fortuneError, error.message || '運勢を計算できません。');
+                }
+            }
+        }
+
+        fortuneToggle.addEventListener('click', () => {
+            if (!fortunePanel.hidden) {
+                viewVersion++;
+                fortunePanel.hidden = true;
+                fortuneToggle.setAttribute('aria-expanded', 'false');
+                return;
+            }
+            const birthDate = savedBirthDate();
+            if (birthDate) showSavedFortune(birthDate);
+            else showBirthForm(false);
+            fortunePanel.hidden = false;
+            fortuneToggle.setAttribute('aria-expanded', 'true');
+        });
+
+        fortuneForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            const birthDate = birthInput.value;
+            const version = ++viewVersion;
+            showFortuneMessage(fortuneError, '');
+            showFortuneMessage(fortuneStatus, '運勢を計算中...');
+            try {
+                FortuneCalculator.parseDate(birthDate);
+                const result = await calculateToday(birthDate);
+                if (version !== viewVersion) return;
+                localStorage.setItem(birthKey, birthDate);
+                displayFortune(result);
+            } catch (error) {
+                if (version === viewVersion) {
+                    showFortuneMessage(fortuneStatus, '');
+                    showFortuneMessage(fortuneError,
+                        error.name === 'SecurityError' || error.name === 'QuotaExceededError'
+                            ? 'このブラウザには保存できません。' : error.message || '運勢を計算できません。');
+                }
+            }
+        });
+
+        fortuneSettingsToggle.addEventListener('click', () => {
+            fortuneSettings.hidden = !fortuneSettings.hidden;
+        });
+        document.getElementById('fortune-settings-close').addEventListener('click', () => {
+            fortuneSettings.hidden = true;
+        });
+        document.getElementById('fortune-change').addEventListener('click', () => showBirthForm(true));
+        fortuneCancel.addEventListener('click', () => {
+            const birthDate = savedBirthDate();
+            if (birthDate) showSavedFortune(birthDate);
+            else showBirthForm(false);
+        });
+        document.getElementById('fortune-delete').addEventListener('click', () => {
+            if (!confirm('保存済みの生年月日を削除しますか？')) return;
+            try {
+                localStorage.removeItem(birthKey);
+                showBirthForm(false);
+            } catch (error) {
+                showFortuneMessage(fortuneError, '保存情報を削除できません。');
+            }
+        });
+
+        function refreshAtMidnight() {
+            if (fortunePanel.hidden || fortuneResult.hidden) return;
+            if (renderedDay !== FortuneCalculator.todayInJapan()) {
+                const birthDate = savedBirthDate();
+                if (birthDate) showSavedFortune(birthDate);
+            }
+        }
+        setInterval(refreshAtMidnight, 60000);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) refreshAtMidnight();
+        });
+
     </script>
 </body>
+
 </html>

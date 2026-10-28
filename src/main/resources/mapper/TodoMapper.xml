@@ -68,6 +68,17 @@
         </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
+    <select id="searchForCsv" resultType="com.example.todoapp.Todo">
+        SELECT id, title, detail, category, priority, pinned, due_date AS dueDate,
+               completed, completed_at AS completedAt, deleted_at AS deletedAt
+        FROM todos
+        <include refid="pageFilters"/>
+        ORDER BY pinned DESC, due_date
+        <choose>
+            <when test="order == 'desc'">DESC, id DESC</when>
+            <otherwise>ASC, id ASC</otherwise>
+        </choose>
+    </select>
     <select id="countForPage" resultType="int">
         SELECT COUNT(*)
         FROM todos

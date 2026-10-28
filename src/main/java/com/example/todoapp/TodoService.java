@@ -29,6 +29,11 @@ public class TodoService {
         return todoMapper.searchPage(keyword, category, order, showCompleted, trash, limit, offset);
     }
 
+    public List<Todo> searchForCsv(String keyword, String category, String order,
+            boolean showCompleted, boolean trash) {
+        return todoMapper.searchForCsv(keyword, category, order, showCompleted, trash);
+    }
+
     public int countForPage(String keyword, String category, boolean showCompleted, boolean trash) {
         return todoMapper.countForPage(keyword, category, showCompleted, trash);
     }

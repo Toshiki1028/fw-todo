@@ -25,6 +25,13 @@ public interface TodoMapper {
             @Param("limit") int limit,
             @Param("offset") int offset);
 
+    List<Todo> searchForCsv(
+            @Param("keyword") String keyword,
+            @Param("category") String category,
+            @Param("order") String order,
+            @Param("showCompleted") boolean showCompleted,
+            @Param("trash") boolean trash);
+
     int countForPage(
             @Param("keyword") String keyword,
             @Param("category") String category,

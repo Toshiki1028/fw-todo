@@ -173,4 +173,38 @@ public class TodoTools {
         }
         return freeDays;
     }
+
+    @McpTool(name = "summarize_week", description = "指定期間のやることを集計し、総件数・ジャンル別件数・未完了で期限切れの件数を返す。一覧そのものは返さない")
+    public java.util.Map<String, Object> summarizeWeek(
+            @McpToolParam(description = "開始日（yyyy-MM-dd）", required = false) String from,
+            @McpToolParam(description = "終了日（yyyy-MM-dd）", required = false) String to) {
+
+        LocalDate fromDate = (from == null || from.isBlank()) ? null : LocalDate.parse(from);
+        LocalDate toDate = (to == null || to.isBlank()) ? null : LocalDate.parse(to);
+
+        if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
+            throw new IllegalArgumentException("開始日は終了日以前にしてください");
+        }
+
+        List<Todo> todos = todoService.search(null, null, "asc", fromDate, toDate);
+
+        java.util.Map<String, Long> categoryCounts = todos.stream()
+                .collect(Collectors.groupingBy(
+                        Todo::getCategory,
+                        java.util.TreeMap::new,
+                        Collectors.counting()));
+
+        long overdueCount = todos.stream()
+                .filter(todo -> todo.getDueDate() != null)
+                .filter(todo -> todo.getDueDate().isBefore(LocalDate.now()))
+                .filter(todo -> !Boolean.TRUE.equals(todo.getCompleted()))
+                .count();
+
+        java.util.Map<String, Object> result = new java.util.LinkedHashMap<>();
+        result.put("totalCount", todos.size());
+        result.put("categoryCounts", categoryCounts);
+        result.put("overdueCount", overdueCount);
+
+        return result;
+    }
 }
