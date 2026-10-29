@@ -41,7 +41,9 @@ public class HomeController {
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "trash", defaultValue = "0") String trash,
             Model model) {
-        String sortOrder = "desc".equals(order) ? "desc" : "asc";
+        String sortOrder = "asc".equals(order) ? "asc"
+                : "desc".equals(order) ? "desc"
+                        : "new";
         boolean viewingTrash = "1".equals(trash);
         boolean showCompleted = !hideCompleted;
         int totalCount = todoService.countForPage(keyword, category, showCompleted, viewingTrash);
@@ -108,7 +110,8 @@ public class HomeController {
     }
 
     @PostMapping("/todos/{id}/confirm")
-    public String editConfirm(@PathVariable Long id, @Valid @ModelAttribute Todo todo, BindingResult bindingResult, Model model) {
+    public String editConfirm(@PathVariable Long id, @Valid @ModelAttribute Todo todo, BindingResult bindingResult,
+            Model model) {
         validateCategory(todo, bindingResult);
         if (bindingResult.hasErrors()) {
             model.addAttribute("id", id);

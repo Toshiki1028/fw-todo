@@ -56,18 +56,29 @@
             </choose>
         </where>
     </sql>
+
+
     <select id="searchPage" resultType="com.example.todoapp.Todo">
         SELECT id, title, category, priority, pinned, due_date AS dueDate, completed,
                completed_at AS completedAt, deleted_at AS deletedAt
         FROM todos
         <include refid="pageFilters"/>
-        ORDER BY pinned DESC, due_date
+        ORDER BY pinned DESC,
         <choose>
-            <when test="order == 'desc'">DESC, id DESC</when>
-            <otherwise>ASC, id ASC</otherwise>
+            <when test="order == 'asc'">
+                due_date ASC, id ASC
+            </when>
+            <when test="order == 'desc'">
+                due_date DESC, id DESC
+            </when>
+            <otherwise>
+                id DESC
+            </otherwise>
         </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
+
+
     <select id="searchForCsv" resultType="com.example.todoapp.Todo">
         SELECT id, title, detail, category, priority, pinned, due_date AS dueDate,
                completed, completed_at AS completedAt, deleted_at AS deletedAt
