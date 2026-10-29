@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>やることを登録</title>
-    <link rel="stylesheet" href="/css/style.css?v=20261027-5">
+    <script src="/theme.js?v=theme-3"></script>
+    <script src="/category-picker.js?v=1" defer></script>
+    <script src="/priority-picker.js?v=1" defer></script>
+    <link rel="stylesheet" href="/css/style.css?v=category-2">
 </head>
 
 <body>
@@ -26,26 +29,56 @@
 
             <div class="form-two-columns">
                 <div class="form-row">
-                    <label class="form-label" for="category">ジャンル</label>
-                    <select class="form-input" id="category" th:field="*{category}">
-                        <option value="">選択してください</option>
-                        <option value="デザイン">デザイン</option>
-                        <option value="マーケティング">マーケティング</option>
-                        <option value="プログラミング">プログラミング</option>
-                        <option value="資格">資格</option>
-                        <option value="就職活動">就職活動</option>
-                    </select>
+                    <label class="form-label" for="category-trigger">ジャンル</label>
+                    <div class="category-picker" data-category-picker>
+                        <input type="hidden" id="category" th:field="*{category}">
+                        <button class="form-input category-trigger" id="category-trigger" type="button"
+                            aria-expanded="false" aria-controls="category-menu">
+                            <span data-category-label
+                                th:text="${#strings.isEmpty(todo.category) ? '選択してください' : todo.category}">選択してください</span>
+                            <span aria-hidden="true">▾</span>
+                        </button>
+                        <div class="category-menu" id="category-menu" hidden>
+                            <button class="category-add" type="button" data-category-add>＋ 新しいジャンルを追加</button>
+                            <div data-category-list>
+                                <div class="category-option" th:each="item : ${categories}"
+                                    th:attr="data-category-id=${item.id},data-category-name=${item.name}">
+                                    <button type="button" data-category-select th:text="${item.name}">ジャンル</button>
+                                    <button type="button" data-category-edit
+                                        th:attr="aria-label=|${item.name}の名前を変更|">✎</button>
+                                    <button type="button" data-category-delete
+                                        th:attr="aria-label=|${item.name}を削除|">×</button>
+                                </div>
+                            </div>
+                            <p class="error category-message" data-category-message role="alert" hidden></p>
+                        </div>
+                    </div>
                     <p class="error" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></p>
                 </div>
 
                 <div class="form-row">
                     <label class="form-label" for="priority">優先度</label>
-                    <select class="form-input" id="priority" th:field="*{priority}">
-                        <option value="">選択してください</option>
-                        <option value="1">高</option>
-                        <option value="2">中</option>
-                        <option value="3">低</option>
-                    </select>
+
+                    <div class="priority-picker" data-priority-picker>
+                        <select id="priority" th:field="*{priority}" class="priority-native-select" tabindex="-1"
+                            aria-hidden="true">
+                            <option value="">選択してください</option>
+                            <option value="1">高</option>
+                            <form th:action="@{/todos/confirm}" <option value="2">中</option>
+                                <option value="3">低</option>
+                        </select>
+                        <button type="button" class="form-input priority-trigger" aria-haspopup="listbox"
+                            aria-expanded="false" aria-controls="priority-menu">
+                            <span data-priority-label>選択してください</span>
+                            <span aria-hidden="true">▾</span>
+                        </button>
+                        <div class="priority-menu" id="priority-menu" role="listbox" hidden>
+                            <button type="button" role="option" data-priority-value="1">高</button>
+                            <button type="button" role="option" data-priority-value="2">中</button>
+                            <button type="button" role="option" data-priority-value="3">低</button>
+                        </div>
+                    </div>
+
                     <p class="error" th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}"></p>
                 </div>
             </div>

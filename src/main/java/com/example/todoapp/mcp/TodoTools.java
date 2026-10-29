@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.todoapp.Todo;
 import com.example.todoapp.TodoService;
+import com.example.todoapp.CategoryService;
 import com.example.todoapp.api.HolidayClient;
 import com.example.todoapp.api.TodoDto;
 
@@ -20,12 +21,12 @@ import com.example.todoapp.api.TodoDto;
 public class TodoTools {
 
     private final TodoService todoService;
+    private final CategoryService categoryService;
     private final HolidayClient holidayClient;
-    private static final Set<String> CATEGORIES = Set.of(
-            "デザイン", "マーケティング", "プログラミング", "資格", "就職活動");
 
-    public TodoTools(TodoService todoService, HolidayClient holidayClient) {
+    public TodoTools(TodoService todoService, CategoryService categoryService, HolidayClient holidayClient) {
         this.todoService = todoService;
+        this.categoryService = categoryService;
         this.holidayClient = holidayClient;
     }
 
@@ -61,8 +62,8 @@ public class TodoTools {
         if (detail != null && detail.length() > 255) {
             throw new IllegalArgumentException("メモは255文字以内で入力してください");
         }
-        if (category == null || !CATEGORIES.contains(category)) {
-            throw new IllegalArgumentException("ジャンルは指定された5種類から選んでください");
+        if (!categoryService.exists(category)) {
+            throw new IllegalArgumentException("登録済みのジャンルを選んでください");
         }
         if (priority == null || priority < 1 || priority > 3) {
             throw new IllegalArgumentException("優先度は1〜3で入力してください");
@@ -104,8 +105,8 @@ public class TodoTools {
             todo.setDetail(detail.isEmpty() ? null : detail);
         }
         if (category != null) {
-            if (!CATEGORIES.contains(category)) {
-                throw new IllegalArgumentException("ジャンルは指定された5種類から選んでください");
+            if (!categoryService.exists(category)) {
+                throw new IllegalArgumentException("登録済みのジャンルを選んでください");
             }
             todo.setCategory(category);
         }

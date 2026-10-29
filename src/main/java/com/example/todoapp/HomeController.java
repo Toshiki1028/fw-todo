@@ -19,9 +19,11 @@ public class HomeController {
 
     private static final int PAGE_SIZE = 10;
     private final TodoService todoService;
+    private final CategoryService categoryService;
 
-    public HomeController(TodoService todoService) {
+    public HomeController(TodoService todoService, CategoryService categoryService) {
         this.todoService = todoService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/")
@@ -35,12 +37,13 @@ public class HomeController {
             @RequestParam(name = "keyword", defaultValue = "") String keyword,
             @RequestParam(name = "category", defaultValue = "") String category,
             @RequestParam(name = "order", defaultValue = "asc") String order,
-            @RequestParam(name = "showCompleted", defaultValue = "false") boolean showCompleted,
+            @RequestParam(name = "hideCompleted", defaultValue = "false") boolean hideCompleted,
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "trash", defaultValue = "0") String trash,
             Model model) {
         String sortOrder = "desc".equals(order) ? "desc" : "asc";
         boolean viewingTrash = "1".equals(trash);
+        boolean showCompleted = !hideCompleted;
         int totalCount = todoService.countForPage(keyword, category, showCompleted, viewingTrash);
         int totalPages = (totalCount + PAGE_SIZE - 1) / PAGE_SIZE;
         int currentPage = Math.max(1, Math.min(page, Math.max(1, totalPages)));
@@ -52,6 +55,7 @@ public class HomeController {
         model.addAttribute("category", category);
         model.addAttribute("order", sortOrder);
         model.addAttribute("showCompleted", showCompleted);
+        model.addAttribute("hideCompleted", hideCompleted);
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("trash", viewingTrash ? 1 : 0);
@@ -61,12 +65,15 @@ public class HomeController {
     @GetMapping("/todos/new")
     public String createForm(Model model) {
         model.addAttribute("todo", new Todo());
+        addCategories(model);
         return "create";
     }
 
     @PostMapping("/todos/confirm")
     public String createConfirm(@Valid @ModelAttribute Todo todo, BindingResult bindingResult, Model model) {
+        validateCategory(todo, bindingResult);
         if (bindingResult.hasErrors()) {
+            addCategories(model);
             return "create";
         }
         model.addAttribute("todo", todo);
@@ -76,6 +83,7 @@ public class HomeController {
     @PostMapping("/todos/new")
     public String createBack(@ModelAttribute Todo todo, Model model) {
         model.addAttribute("todo", todo);
+        addCategories(model);
         return "create";
     }
 
@@ -95,13 +103,16 @@ public class HomeController {
         }
         model.addAttribute("todo", todo);
         model.addAttribute("id", id);
+        addCategories(model);
         return "edit";
     }
 
     @PostMapping("/todos/{id}/confirm")
     public String editConfirm(@PathVariable Long id, @Valid @ModelAttribute Todo todo, BindingResult bindingResult, Model model) {
+        validateCategory(todo, bindingResult);
         if (bindingResult.hasErrors()) {
             model.addAttribute("id", id);
+            addCategories(model);
             return "edit";
         }
         model.addAttribute("todo", todo);
@@ -113,7 +124,19 @@ public class HomeController {
     public String editBack(@PathVariable Long id, @ModelAttribute Todo todo, Model model) {
         model.addAttribute("todo", todo);
         model.addAttribute("id", id);
+        addCategories(model);
         return "edit";
+    }
+
+    private void addCategories(Model model) {
+        model.addAttribute("categories", categoryService.findAll());
+    }
+
+    private void validateCategory(Todo todo, BindingResult bindingResult) {
+        if (todo.getCategory() != null && !todo.getCategory().isBlank()
+                && !categoryService.exists(todo.getCategory())) {
+            bindingResult.rejectValue("category", "category.invalid", "ジャンルを選び直してください");
+        }
     }
 
     @PostMapping("/todos/{id}")
@@ -156,14 +179,14 @@ public class HomeController {
             @RequestParam(name = "keyword", defaultValue = "") String keyword,
             @RequestParam(name = "category", defaultValue = "") String category,
             @RequestParam(name = "order", defaultValue = "asc") String order,
-            @RequestParam(name = "showCompleted", defaultValue = "false") boolean showCompleted,
+            @RequestParam(name = "hideCompleted", defaultValue = "false") boolean hideCompleted,
             @RequestParam(name = "page", defaultValue = "1") int page,
             RedirectAttributes redirectAttributes) {
         int changed = todoService.togglePinned(id);
         redirectAttributes.addAttribute("keyword", keyword);
         redirectAttributes.addAttribute("category", category);
         redirectAttributes.addAttribute("order", "desc".equals(order) ? "desc" : "asc");
-        redirectAttributes.addAttribute("showCompleted", showCompleted);
+        redirectAttributes.addAttribute("hideCompleted", hideCompleted);
         redirectAttributes.addAttribute("page", page);
         redirectAttributes.addFlashAttribute("message", changed > 0 ? "印を切り替えました" : "見つかりませんでした");
         return "redirect:/todos";

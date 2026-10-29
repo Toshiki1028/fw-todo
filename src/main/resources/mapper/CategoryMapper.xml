@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.todoapp.CategoryMapper">
+    <select id="findAll" resultType="com.example.todoapp.Category">
+        SELECT id, name FROM categories ORDER BY id
+    </select>
+    <select id="findById" resultType="com.example.todoapp.Category">
+        SELECT id, name FROM categories WHERE id = #{id}
+    </select>
+    <select id="findByIdForUpdate" resultType="com.example.todoapp.Category">
+        SELECT id, name FROM categories WHERE id = #{id} FOR UPDATE
+    </select>
+    <select id="findByName" resultType="com.example.todoapp.Category">
+        SELECT id, name FROM categories WHERE name = #{name}
+    </select>
+    <select id="findByNameForUpdate" resultType="com.example.todoapp.Category">
+        SELECT id, name FROM categories WHERE name = #{name} FOR UPDATE
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO categories (name) VALUES (#{name})
+    </insert>
+    <update id="rename">
+        UPDATE categories SET name = #{name} WHERE id = #{id}
+    </update>
+    <update id="renameTodos">
+        UPDATE todos SET category = #{newName} WHERE category = #{oldName}
+    </update>
+    <delete id="deleteIfUnused">
+        DELETE c FROM categories c
+        WHERE c.id = #{id}
+          AND NOT EXISTS (SELECT 1 FROM todos t WHERE t.category = c.name)
+    </delete>
+    <select id="countTodos" resultType="int">
+        SELECT COUNT(*) FROM todos WHERE category = #{name}
+    </select>
+</mapper>

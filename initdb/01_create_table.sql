@@ -16,3 +16,13 @@ CREATE TABLE todos (
 
 INSERT INTO todos (title, category, priority, completed, completed_at)
 VALUES ('sample-completed', 'プログラミング', 2, TRUE, '2026-04-05 00:00:00');
+
+CREATE TABLE categories (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_categories_name (name)
+) DEFAULT CHARACTER SET utf8mb4;
+
+INSERT INTO categories (name) VALUES
+    ('デザイン'), ('マーケティング'), ('プログラミング'), ('資格'), ('就職活動');

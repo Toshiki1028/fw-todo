@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>削除内容の確認</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <script src="/theme.js?v=theme-3"></script>
+    <link rel="stylesheet" href="/css/style.css?v=theme-3">
 </head>
+
 <body>
-    <div class="container">
+    <div class="container todo-delete-page">
         <h1 class="page-title">削除内容の確認</h1>
-        <p class="confirm-value">やること：<span th:text="${#strings.isEmpty(todo.title) ? '（入力なし）' : todo.title}">（入力なし）</span></p>
-        <p class="confirm-value">ジャンル：<span th:text="${#strings.isEmpty(todo.category) ? '（入力なし）' : todo.category}">（入力なし）</span></p>
+        <p class="confirm-value">やること：<span
+                th:text="${#strings.isEmpty(todo.title) ? '（入力なし）' : todo.title}">（入力なし）</span></p>
+        <p class="confirm-value">ジャンル：<span
+                th:text="${#strings.isEmpty(todo.category) ? '（入力なし）' : todo.category}">（入力なし）</span></p>
         <p class="confirm-value">期限：<span th:text="${todo.dueDate == null ? '（入力なし）' : todo.dueDate}">（入力なし）</span></p>
         <div class="confirm-actions">
             <form th:action="@{/todos/{id}/delete(id=${id})}" method="post">
@@ -19,4 +24,5 @@
         </div>
     </div>
 </body>
+
 </html>

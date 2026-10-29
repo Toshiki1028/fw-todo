@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <title>カレンダー</title>
-    <link rel="stylesheet" href="/css/style.css?v=calendar-toolbar-2"
-        th:href="@{/css/style.css(v='calendar-toolbar-2')}">
+    <script src="/theme.js?v=theme-3"></script>
+    <link rel="stylesheet" href="/css/style.css?v=theme-3" th:href="@{/css/style.css(v='theme-3')}">
 </head>
 
 <body>
-    <div class="container">
+    <div class="container calendar-page">
         <div class="calendar-toolbar">
             <nav class="calendar-period" aria-label="カレンダーの移動">
                 <a class="btn sub calendar-step calendar-step-month" aria-label="前の月" title="前の月"
@@ -19,11 +19,11 @@
                 <h1 class="page-title" th:text="|${displayedMonth.year}年${displayedMonth.monthValue}月|">カレンダー</h1>
                 <a class="btn sub calendar-step calendar-step-month" aria-label="次の月" title="次の月"
                     th:href="@{/calendar(year=${nextMonth.year},month=${nextMonth.monthValue})}">›</a>
-                <button type="button" class="btn sub calendar-step calendar-step-week" id="next-week"
-                    aria-label="次の週" title="次の週" hidden>›</button>
+                <button type="button" class="btn sub calendar-step calendar-step-week" id="next-week" aria-label="次の週"
+                    title="次の週" hidden>›</button>
             </nav>
             <div class="calendar-nav-actions">
-                <a class="btn" th:href="@{/todos/new}">＋ 新規登録</a>
+
                 <div class="calendar-view-switch">
                     <button type="button" class="btn" id="month-view-btn">月</button>
                     <button type="button" class="btn sub" id="week-view-btn">週</button>
@@ -34,32 +34,36 @@
                 <a th:href="@{/calendar}" aria-current="page"><span aria-hidden="true">▦</span> カレンダー</a>
             </nav>
         </div>
+
+        <!-- 上部とカレンダー本体の間に背景を見せるための境界 -->
+        <div class="calendar-panel-gap" aria-hidden="true"></div>
+
         <div class="calendar-scroll">
-        <table class="calendar-table" th:attr="data-from=${firstDay},data-to=${lastDay}">
-            <thead>
-                <tr>
-                    <th scope="col">日</th>
-                    <th scope="col">月</th>
-                    <th scope="col">火</th>
-                    <th scope="col">水</th>
-                    <th scope="col">木</th>
-                    <th scope="col">金</th>
-                    <th scope="col">土</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="week : ${weeks}">
-                    <th:block th:each="day : ${week}">
-                        <td th:if="${day != null}" th:attr="data-date=${day}">
-                            <div class="calendar-day-header">
-                                <span class="calendar-day-date" th:text="${day.dayOfMonth}"></span>
-                            </div>
-                        </td>
-                        <td th:unless="${day != null}" class="calendar-empty"></td>
-                    </th:block>
-                </tr>
-            </tbody>
-        </table>
+            <table class="calendar-table" th:attr="data-from=${firstDay},data-to=${lastDay}">
+                <thead>
+                    <tr>
+                        <th scope="col">日</th>
+                        <th scope="col">月</th>
+                        <th scope="col">火</th>
+                        <th scope="col">水</th>
+                        <th scope="col">木</th>
+                        <th scope="col">金</th>
+                        <th scope="col">土</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="week : ${weeks}">
+                        <th:block th:each="day : ${week}">
+                            <td th:if="${day != null}" th:attr="data-date=${day}">
+                                <div class="calendar-day-header">
+                                    <span class="calendar-day-date" th:text="${day.dayOfMonth}"></span>
+                                </div>
+                            </td>
+                            <td th:unless="${day != null}" class="calendar-empty"></td>
+                        </th:block>
+                    </tr>
+                </tbody>
+            </table>
         </div>
         <dialog class="calendar-todo-dialog" id="calendar-todo-dialog" aria-labelledby="calendar-todo-title">
             <div class="calendar-todo-dialog-header">
@@ -68,59 +72,126 @@
             </div>
             <div class="calendar-todo-dialog-content" id="calendar-todo-content"></div>
         </dialog>
-        <dialog class="calendar-todo-dialog" id="calendar-todo-detail-dialog" aria-labelledby="calendar-todo-detail-title">
+        <dialog class="calendar-todo-dialog" id="calendar-todo-detail-dialog"
+            aria-labelledby="calendar-todo-detail-title">
             <div class="calendar-todo-dialog-header">
                 <h2 id="calendar-todo-detail-title"></h2>
-                <button type="button" class="calendar-todo-close" id="calendar-todo-detail-close" aria-label="閉じる">×</button>
+                <button type="button" class="calendar-todo-close" id="calendar-todo-detail-close"
+                    aria-label="閉じる">×</button>
             </div>
             <div class="calendar-todo-dialog-content" id="calendar-todo-detail-content"></div>
         </dialog>
+
+        <!-- カレンダー内：Todo登録・編集モーダル -->
+        <dialog class="calendar-todo-dialog calendar-todo-form-dialog" id="calendar-todo-form-dialog"
+            aria-labelledby="calendar-todo-form-title">
+
+            <div class="calendar-todo-dialog-header">
+                <h2 id="calendar-todo-form-title">Todoを登録</h2>
+                <button type="button" class="calendar-todo-close" id="calendar-todo-form-close"
+                    aria-label="閉じる">×</button>
+            </div>
+
+            <form id="calendar-todo-form" class="calendar-todo-dialog-content">
+                <input type="hidden" id="calendar-form-id">
+
+                <div class="form-row">
+                    <label class="form-label" for="calendar-form-title">やること</label>
+                    <input class="form-input" type="text" id="calendar-form-title" maxlength="255" required>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label" for="calendar-form-detail">メモ</label>
+                    <input class="form-input" type="text" id="calendar-form-detail" maxlength="255">
+                </div>
+
+                <div class="form-two-columns">
+                    <div class="form-row">
+                        <label class="form-label" for="calendar-form-category">ジャンル</label>
+                        <select class="form-input" id="calendar-form-category" required>
+                            <option value="">選択してください</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label" for="calendar-form-priority">優先度</label>
+                        <select class="form-input" id="calendar-form-priority" required>
+                            <option value="">選択してください</option>
+                            <option value="1">高</option>
+                            <option value="2">中</option>
+                            <option value="3">低</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label" for="calendar-form-date">期限</label>
+                    <input class="form-input" type="date" id="calendar-form-date">
+                </div>
+
+                <p class="error" id="calendar-form-error" role="alert" hidden></p>
+
+                <div class="calendar-form-actions">
+                    <button class="btn" type="submit" id="calendar-form-save">保存する</button>
+                    <button class="btn sub" type="button" id="calendar-form-cancel">キャンセル</button>
+                </div>
+            </form>
+        </dialog>
+
         <div class="calendar-footer">
             <p class="weather-credit">東京の天気: <a class="link" href="https://open-meteo.com/">Open-Meteo</a></p>
             <button type="button" class="btn sub" id="fortune-toggle" aria-expanded="false"
                 aria-controls="fortune-panel">🔮 今日の運勢</button>
         </div>
-        <section class="fortune-panel" id="fortune-panel" aria-label="簡易三柱・今日の運勢" hidden>
+        <dialog class="fortune-panel" id="fortune-panel" aria-labelledby="fortune-dialog-title">
             <div class="fortune-top">
-                <strong>🔮 今日の運勢</strong>
-                <button type="button" class="btn sub fortune-small-btn" id="fortune-settings-toggle" hidden>⚙ 設定</button>
+                <strong id="fortune-dialog-title">🔮 今日の運勢</strong>
+                <button type="button" class="btn sub fortune-small-btn" id="fortune-settings-toggle" hidden>⚙
+                    設定</button>
+                <button type="button" class="calendar-todo-close" id="fortune-close" aria-label="閉じる">×</button>
             </div>
-            <form id="fortune-form" hidden>
-                <label for="fortune-birth">生年月日を入力してください</label>
-                <div class="fortune-form-row">
-                    <input id="fortune-birth" type="date" min="1900-01-07" max="2052-12-31" autocomplete="off" required>
-                    <button type="submit" class="btn">保存して占う</button>
-                    <button type="button" class="btn sub fortune-small-btn" id="fortune-cancel" hidden>キャンセル</button>
+            <div class="fortune-content">
+                <form id="fortune-form" hidden>
+                    <label for="fortune-birth">生年月日を入力してください</label>
+                    <div class="fortune-form-row">
+                        <input id="fortune-birth" type="date" min="1900-01-07" max="2052-12-31" autocomplete="off"
+                            required>
+                        <button type="submit" class="btn">保存して占う</button>
+                        <button type="button" class="btn sub fortune-small-btn" id="fortune-cancel"
+                            hidden>キャンセル</button>
+                    </div>
+                    <small>日付は日本時間として扱います。対応範囲：1900年1月7日〜2052年12月31日。節入り当日は出生時刻がないため判定できません。</small>
+                </form>
+                <div id="fortune-result" role="status" aria-live="polite" hidden>
+                    <div>日付：<time id="fortune-date"></time></div>
+                    <div>総合運：<span id="fortune-stars"></span></div>
+                    <p id="fortune-comment"></p>
+                    <div>ラッキーカラーは『<span id="fortune-color"></span>』</div>
                 </div>
-                <small>日付は日本時間として扱います。対応範囲：1900年1月7日〜2052年12月31日。節入り当日は出生時刻がないため判定できません。</small>
-            </form>
-            <div id="fortune-result" role="status" aria-live="polite" hidden>
-                <div>総合運：<span id="fortune-stars"></span></div>
-                <p id="fortune-comment"></p>
-                <div>ラッキーカラーは『<span id="fortune-color"></span>』</div>
-            </div>
-            <div class="fortune-settings" id="fortune-settings" hidden>
-                <button type="button" class="btn sub fortune-small-btn" id="fortune-change">生年月日を変更する</button>
-                <button type="button" class="btn sub fortune-small-btn" id="fortune-delete">保存済みの生年月日を削除する</button>
-                <button type="button" class="btn sub fortune-small-btn" id="fortune-settings-close">設定画面を閉じる</button>
-            </div>
-            <p id="fortune-status" role="status" aria-live="polite" hidden></p>
-            <p class="fortune-error" id="fortune-error" role="alert" hidden></p>
-            <div class="fortune-note">
-                <span>四柱推命をもとに今日の運勢を独自に算出しています。</span>
-                <button type="button" class="fortune-license-toggle" id="fortune-license-toggle"
-                    aria-expanded="false" aria-controls="fortune-license-details">データ・ライセンス情報</button>
-                <div class="fortune-license-details" id="fortune-license-details" hidden>
-                    <p>娯楽用の簡易占いです。科学的に未来を予測するものではありません。</p>
-                    <p>節入り時刻データ：Chujia Kuang, Chinese Calendar Open Datasets v1.1.0</p>
-                    <p>出典：<a class="link" href="https://doi.org/10.5281/zenodo.22788686"
-                            target="_blank" rel="noopener noreferrer">https://doi.org/10.5281/zenodo.22788686</a></p>
-                    <p>ライセンス：<a class="link" href="https://creativecommons.org/licenses/by/4.0/"
-                            target="_blank" rel="noopener noreferrer">CC BY 4.0</a></p>
-                    <p>加工内容：元データから12の節入り時刻を抽出し、UTCから日本時間に変換して形式を変更しています。</p>
+                <div class="fortune-settings" id="fortune-settings" hidden>
+                    <button type="button" class="btn sub fortune-small-btn" id="fortune-change">生年月日を変更する</button>
+                    <button type="button" class="btn sub fortune-small-btn" id="fortune-delete">保存済みの生年月日を削除する</button>
+                    <button type="button" class="btn sub fortune-small-btn"
+                        id="fortune-settings-close">設定画面を閉じる</button>
+                </div>
+                <p id="fortune-status" role="status" aria-live="polite" hidden></p>
+                <p class="fortune-error" id="fortune-error" role="alert" hidden></p>
+                <div class="fortune-note">
+                    <span>四柱推命をもとに今日の運勢を独自に算出しています。</span>
+                    <button type="button" class="fortune-license-toggle" id="fortune-license-toggle"
+                        aria-expanded="false" aria-controls="fortune-license-details">データ・ライセンス情報</button>
+                    <div class="fortune-license-details" id="fortune-license-details" hidden>
+                        <p>娯楽用の簡易占いです。科学的に未来を予測するものではありません。</p>
+                        <p>節入り時刻データ：Chujia Kuang, Chinese Calendar Open Datasets v1.1.0</p>
+                        <p>出典：<a class="link" href="https://doi.org/10.5281/zenodo.22788686" target="_blank"
+                                rel="noopener noreferrer">https://doi.org/10.5281/zenodo.22788686</a></p>
+                        <p>ライセンス：<a class="link" href="https://creativecommons.org/licenses/by/4.0/" target="_blank"
+                                rel="noopener noreferrer">CC BY 4.0</a></p>
+                        <p>加工内容：元データから12の節入り時刻を抽出し、UTCから日本時間に変換して形式を変更しています。</p>
+                    </div>
                 </div>
             </div>
-        </section>
+        </dialog>
     </div>
     <script src="/fortune.js" th:src="@{/fortune.js}"></script>
     <script>
@@ -285,6 +356,143 @@
         const todoDetailDialog = document.getElementById('calendar-todo-detail-dialog');
         const todoDetailContent = document.getElementById('calendar-todo-detail-content');
         let activeDayCell = null;
+
+        // カレンダー内の登録・編集フォーム
+        const todoFormDialog = document.getElementById('calendar-todo-form-dialog');
+
+        function closeTodoForm() {
+            if (todoFormDialog.open) {
+                todoFormDialog.close();
+            }
+        }
+
+
+        // カレンダーの登録・編集フォームにジャンル一覧を読み込む
+        async function loadCalendarCategories(selectedCategory = '') {
+            const categorySelect = document.getElementById('calendar-form-category');
+
+            const response = await fetch('/api/categories');
+            if (!response.ok) {
+                throw new Error('ジャンル一覧を取得できませんでした');
+            }
+
+            const categories = await response.json();
+
+            categorySelect.replaceChildren();
+
+            const placeholder = new Option('選択してください', '');
+            categorySelect.add(placeholder);
+
+            for (const category of categories) {
+                categorySelect.add(new Option(category.name, category.name));
+            }
+
+            categorySelect.value = selectedCategory;
+        }
+
+        // カレンダー内で新規Todoを登録する
+
+        const calendarTodoForm = document.getElementById('calendar-todo-form');
+        const calendarFormError = document.getElementById('calendar-form-error');
+
+        calendarTodoForm.addEventListener('submit', async event => {
+            event.preventDefault();
+
+            // IDがあれば編集、なければ新規登録
+            const todoId = document.getElementById('calendar-form-id').value;
+            const isEditing = todoId !== '';
+
+            const data = {
+                title: document.getElementById('calendar-form-title').value.trim(),
+                detail: document.getElementById('calendar-form-detail').value.trim(),
+                category: document.getElementById('calendar-form-category').value,
+                priority: Number(document.getElementById('calendar-form-priority').value),
+                dueDate: document.getElementById('calendar-form-date').value || null,
+                completed: false
+            };
+
+            calendarFormError.hidden = true;
+
+            if (!data.title || !data.category || !data.priority) {
+                calendarFormError.textContent = 'やること・ジャンル・優先度を入力してください';
+                calendarFormError.hidden = false;
+                return;
+            }
+
+            const saveButton = document.getElementById('calendar-form-save');
+            saveButton.disabled = true;
+
+
+            try {
+                // 新規登録か編集かによって保存先を決める
+                const url = isEditing
+                    ? '/api/todos/' + encodeURIComponent(todoId)
+                    : '/api/todos';
+
+                // 編集時は元の完了状態を維持する
+                if (isEditing) {
+                    const currentResponse = await fetch(url);
+
+                    if (!currentResponse.ok) {
+                        throw new Error('編集対象のTodoを取得できませんでした');
+                    }
+
+                    const currentTodo = await currentResponse.json();
+                    data.completed = currentTodo.completed;
+                }
+
+                // 新規登録はPOST、編集はPUT
+                const response = await fetch(url, {
+                    method: isEditing ? 'PUT' : 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+
+
+                if (!response.ok) {
+                    throw new Error('登録できませんでした（HTTP ' + response.status + '）');
+                }
+
+                closeTodoForm();
+
+                // データを再取得して最新のカレンダーを表示する
+                window.location.reload();
+
+            } catch (error) {
+                calendarFormError.textContent = error.message;
+                calendarFormError.hidden = false;
+            } finally {
+                saveButton.disabled = false;
+            }
+        });
+
+
+        // 「×」で閉じる
+        document.getElementById('calendar-todo-form-close')
+            .addEventListener('click', closeTodoForm);
+
+        // 「キャンセル」で閉じる
+        document.getElementById('calendar-form-cancel')
+            .addEventListener('click', closeTodoForm);
+
+        // モーダル外側をクリックして閉じる
+        todoFormDialog.addEventListener('click', event => {
+            if (event.target !== todoFormDialog) return;
+
+            const bounds = todoFormDialog.getBoundingClientRect();
+            if (
+                event.clientX < bounds.left ||
+                event.clientX > bounds.right ||
+                event.clientY < bounds.top ||
+                event.clientY > bounds.bottom
+            ) {
+                closeTodoForm();
+            }
+        });
+
         document.getElementById('calendar-todo-close').addEventListener('click', () => todoDialog.close());
         document.getElementById('calendar-todo-detail-close').addEventListener('click', () => todoDetailDialog.close());
         todoDialog.addEventListener('close', () => { activeDayCell = null; });
@@ -317,11 +525,18 @@
                 details.append(term, description);
             }
             item.appendChild(details);
-            const edit = document.createElement('a');
+
+            const edit = document.createElement('button');
+            edit.type = 'button';
             edit.className = 'btn';
-            edit.href = '/todos/' + todo.id + '/edit';
             edit.textContent = '編集する';
+
+            edit.addEventListener('click', () => {
+                openCalendarTodoEdit(todo);
+            });
+
             item.appendChild(edit);
+
             return item;
         }
 
@@ -331,6 +546,38 @@
             todoDetailDialog.showModal();
         }
 
+        // カレンダー内で既存Todoの編集フォームを開く
+        async function openCalendarTodoEdit(todo) {
+            const dialog = document.getElementById('calendar-todo-form-dialog');
+            const form = document.getElementById('calendar-todo-form');
+            const error = document.getElementById('calendar-form-error');
+
+            form.reset();
+            error.hidden = true;
+            error.textContent = '';
+
+            document.getElementById('calendar-form-id').value = todo.id;
+            document.getElementById('calendar-todo-form-title').textContent = 'Todoを編集';
+            document.getElementById('calendar-form-title').value = todo.title ?? '';
+            document.getElementById('calendar-form-detail').value = todo.detail ?? '';
+            document.getElementById('calendar-form-priority').value = String(todo.priority ?? '');
+            document.getElementById('calendar-form-date').value = todo.dueDate ?? '';
+
+            try {
+                await loadCalendarCategories(todo.category ?? '');
+            } catch (e) {
+                error.textContent = 'ジャンルを取得できませんでした';
+                error.hidden = false;
+                return;
+            }
+
+            // 日付ごとの一覧モーダルを閉じて編集フォームを開く
+            if (todoDialog.open) todoDialog.close();
+            if (todoDetailDialog.open) todoDetailDialog.close();
+
+            dialog.showModal();
+        }
+
         function showDayDetails(cell) {
             activeDayCell = cell;
             document.getElementById('calendar-todo-title').textContent = cell.dataset.date + ' のTodo';
@@ -338,11 +585,75 @@
             if (dayTodos?.length) {
                 const list = document.createElement('ul');
                 list.className = 'calendar-todo-list';
+
                 for (const todo of dayTodos) {
                     const item = document.createElement('li');
-                    item.textContent = todo.title ?? '';
+                    item.className = 'calendar-todo-list-item';
+
+                    const title = document.createElement('span');
+                    title.textContent = todo.title ?? '';
+
+                    const actions = document.createElement('div');
+                    actions.className = 'todo-operation-links';
+
+
+                    const edit = document.createElement('button');
+                    edit.type = 'button';
+                    edit.className = 'todo-icon-action todo-edit-action';
+                    edit.textContent = '✎';
+                    edit.title = '編集';
+                    edit.setAttribute('aria-label', '編集');
+
+                    edit.addEventListener('click', event => {
+                        event.stopPropagation();
+                        openCalendarTodoEdit(todo);
+                    });
+
+
+
+                    const remove = document.createElement('button');
+                    remove.type = 'button';
+                    remove.className = 'todo-icon-action todo-delete-action';
+                    remove.textContent = '×';
+                    remove.title = '削除';
+                    remove.setAttribute('aria-label', '削除');
+
+                    remove.addEventListener('click', async event => {
+                        event.stopPropagation();
+
+                        const confirmed = window.confirm(
+                            '「' + (todo.title ?? '') + '」を削除しますか？\n削除後も「削除済み」から復元できます。'
+                        );
+
+                        if (!confirmed) return;
+
+                        remove.disabled = true;
+
+                        try {
+                            const response = await fetch(
+                                '/api/todos/' + encodeURIComponent(todo.id),
+                                { method: 'DELETE' }
+                            );
+
+                            if (!response.ok) {
+                                throw new Error('削除できませんでした（HTTP ' + response.status + '）');
+                            }
+
+                            // カレンダー画面のまま、削除結果を反映する
+                            window.location.reload();
+
+                        } catch (error) {
+                            window.alert(error.message);
+                            remove.disabled = false;
+                        }
+                    });
+
+
+                    actions.append(edit, remove);
+                    item.append(title, actions);
                     list.appendChild(item);
                 }
+
                 todoDialogContent.replaceChildren(list);
             } else {
                 const message = document.createElement('p');
@@ -350,6 +661,28 @@
                     dayTodos === undefined ? 'Todoを取得できませんでした' : 'この日のTodoはありません';
                 todoDialogContent.replaceChildren(message);
             }
+            // 日付別Todo一覧の下に新規追加ボタンを表示
+            const addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.className = 'btn calendar-todo-add';
+            addButton.textContent = '＋ 新規追加';
+
+            addButton.addEventListener('click', () => {
+                document.getElementById('calendar-todo-form').reset();
+                document.getElementById('calendar-form-id').value = '';
+                document.getElementById('calendar-todo-form-title').textContent = 'Todoを登録';
+                document.getElementById('calendar-form-date').value = cell.dataset.date;
+                loadCalendarCategories().catch(error => {
+                    const message = document.getElementById('calendar-form-error');
+                    message.textContent = error.message;
+                    message.hidden = false;
+                });
+                todoDialog.close();
+                document.getElementById('calendar-todo-form-dialog').showModal();
+            });
+
+            todoDialogContent.appendChild(addButton);
+
             if (!todoDialog.open) todoDialog.showModal();
         }
 
@@ -359,7 +692,16 @@
         });
 
         async function loadTodos(params, cells) {
-            for (const cell of cells.values()) todoDataByCell.set(cell, null);
+
+            for (const cell of cells.values()) {
+                todoDataByCell.set(cell, null);
+
+                // 再取得前に、以前表示したTodoだけを取り除く
+                cell.querySelectorAll('.calendar-todo-link').forEach(button => {
+                    button.remove();
+                });
+            }
+
             let todos;
             try {
                 const res = await fetch('/api/todos?' + params.toString());
@@ -390,10 +732,12 @@
                     title.type = 'button';
                     title.textContent = todo.title;
                     title.classList.add('calendar-todo-link');
+
                     title.addEventListener('click', event => {
                         event.stopPropagation();
-                        showTodoDetails(todo);
+                        showDayDetails(cell);
                     });
+
                     const dueDate = new Date(todo.dueDate + 'T00:00:00');
                     if (dueDate < today && todo.completed !== true) {
                         title.classList.add('calendar-todo-overdue');
@@ -479,6 +823,8 @@
 
         const fortuneToggle = document.getElementById('fortune-toggle');
         const fortunePanel = document.getElementById('fortune-panel');
+        let fortuneClosing = false;
+        let fortuneCloseTimer;
         const fortuneLicenseToggle = document.getElementById('fortune-license-toggle');
         const fortuneLicenseDetails = document.getElementById('fortune-license-details');
         fortuneLicenseToggle.addEventListener('click', () => {
@@ -552,8 +898,17 @@
         }
 
         function displayFortune(result) {
-            document.getElementById('fortune-stars').textContent =
-                '★'.repeat(result.reading.stars) + '☆'.repeat(5 - result.reading.stars);
+            const fortuneDate = document.getElementById('fortune-date');
+            fortuneDate.dateTime = result.today;
+            fortuneDate.textContent = result.today;
+            const starsElement = document.getElementById('fortune-stars');
+            starsElement.innerHTML =
+                '<span class="fortune-star-filled">' +
+                '★'.repeat(result.reading.stars) +
+                '</span>' +
+                '<span class="fortune-star-empty">' +
+                '☆'.repeat(5 - result.reading.stars) +
+                '</span>';
             document.getElementById('fortune-comment').textContent = result.reading.comment;
             const colorName = document.getElementById('fortune-color');
             colorName.textContent = result.reading.color;
@@ -578,27 +933,71 @@
             showFortuneMessage(fortuneStatus, '運勢を計算中...');
             try {
                 const result = await calculateToday(birthDate);
-                if (version === viewVersion && !fortunePanel.hidden) displayFortune(result);
+                if (version === viewVersion && fortunePanel.open) displayFortune(result);
             } catch (error) {
-                if (version === viewVersion && !fortunePanel.hidden) {
+                if (version === viewVersion && fortunePanel.open) {
                     showFortuneMessage(fortuneStatus, '');
                     showFortuneMessage(fortuneError, error.message || '運勢を計算できません。');
                 }
             }
         }
 
-        fortuneToggle.addEventListener('click', () => {
-            if (!fortunePanel.hidden) {
-                viewVersion++;
-                fortunePanel.hidden = true;
-                fortuneToggle.setAttribute('aria-expanded', 'false');
+        function finishFortuneClose() {
+            if (!fortunePanel.open) return;
+            clearTimeout(fortuneCloseTimer);
+            fortuneCloseTimer = undefined;
+            fortuneClosing = false;
+            fortunePanel.close();
+        }
+
+        function requestFortuneClose() {
+            if (!fortunePanel.open || fortuneClosing) return;
+            viewVersion++;
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                finishFortuneClose();
                 return;
             }
+            fortuneClosing = true;
+            fortunePanel.classList.add('is-closing');
+            fortuneCloseTimer = setTimeout(finishFortuneClose, 240);
+        }
+
+        fortuneToggle.addEventListener('click', () => {
+            if (fortunePanel.open) {
+                requestFortuneClose();
+                return;
+            }
+            fortunePanel.classList.remove('is-closing');
+            fortunePanel.showModal();
+            fortuneToggle.setAttribute('aria-expanded', 'true');
             const birthDate = savedBirthDate();
             if (birthDate) showSavedFortune(birthDate);
             else showBirthForm(false);
-            fortunePanel.hidden = false;
-            fortuneToggle.setAttribute('aria-expanded', 'true');
+        });
+        document.getElementById('fortune-close').addEventListener('click', requestFortuneClose);
+        fortunePanel.addEventListener('cancel', event => {
+            event.preventDefault();
+            requestFortuneClose();
+        });
+        fortunePanel.addEventListener('animationend', event => {
+            if (fortuneClosing && event.target === fortunePanel && event.animationName === 'fortune-fade-out') {
+                finishFortuneClose();
+            }
+        });
+        fortunePanel.addEventListener('close', () => {
+            if (fortunePanel.open) return;
+            clearTimeout(fortuneCloseTimer);
+            fortuneCloseTimer = undefined;
+            fortuneClosing = false;
+            fortunePanel.classList.remove('is-closing');
+            viewVersion++;
+            fortuneToggle.setAttribute('aria-expanded', 'false');
+        });
+        fortunePanel.addEventListener('click', event => {
+            if (event.target !== fortunePanel) return;
+            const bounds = fortunePanel.getBoundingClientRect();
+            if (event.clientX < bounds.left || event.clientX > bounds.right ||
+                event.clientY < bounds.top || event.clientY > bounds.bottom) requestFortuneClose();
         });
 
         fortuneForm.addEventListener('submit', async event => {
@@ -646,7 +1045,7 @@
         });
 
         function refreshAtMidnight() {
-            if (fortunePanel.hidden || fortuneResult.hidden) return;
+            if (!fortunePanel.open || fortuneResult.hidden) return;
             if (renderedDay !== FortuneCalculator.todayInJapan()) {
                 const birthDate = savedBirthDate();
                 if (birthDate) showSavedFortune(birthDate);

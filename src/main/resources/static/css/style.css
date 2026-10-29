@@ -1,14 +1,66 @@
+:root {
+    --page-bg: #7ac5e9;
+    --content-bg: #fafcf8;
+    --content-panel-bg: rgba(250, 252, 248, 0.83);
+    --modal-panel-bg: rgba(250, 252, 248, 0.97);
+    --surface-bg: #eef2ed;
+    --todo-table-bg: rgba(250, 252, 248, 0.98);
+    --todo-table-header-bg: #e6eee5;
+    --input-inset-bg: #fafcf8;
+    --text-main: #344b41;
+    --text-strong: #344b41;
+    --text-muted: #526b61;
+    --border: #cbd8cd;
+    --border-strong: #cbd8cd;
+    --button-bg: #dbe8da;
+    --button-active: #dbe8da;
+    --switch-border: #cbd8cd;
+    --switch-text: #526b61;
+    --switch-hover: #dbe8da;
+    --link: #75521c;
+    --accent: #c58d2e;
+    --overdue-bg: #f8e7e2;
+    --overdue-text: #a03f35;
+    --priority-high: #a03f35;
+    --saturday-bg: #e4edf0;
+    --sunday-bg: #f3e7e5;
+    --holiday-bg: #f3ead6;
+    --holiday-mark: rgba(130, 91, 28, 0.13);
+}
+
+:root[data-theme="night"] {
+    --page-bg: #06152c;
+}
+
 * {
     box-sizing: border-box;
 }
 
+html {
+    background-color: var(--page-bg);
+    background-image: url("../images/day-sky-soft.png"),
+        radial-gradient(circle at 88% 7%, #fff4b7 0, #ffebaa 12%, transparent 40%),
+        linear-gradient(160deg, #72c5f1 0%, #aadbef 58%, #e1f2ed 100%);
+    background-position: right top;
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
 body {
     margin: 0;
-    color: #e5e7eb;
-    background: #0f172a;
+    min-height: 100vh;
+    color: var(--text-main);
     font-family: sans-serif;
     font-size: 16px;
     line-height: 1.6;
+}
+
+:root[data-theme="night"] {
+    background-image: url("../images/night-sky-soft.png"),
+        radial-gradient(circle at 95% 8%, #e8d7a0 0, #8e826b 16%, transparent 42%),
+        linear-gradient(160deg, #07152e 0%, #0b274d 62%, #071830 100%);
+    background-position: calc(100% + 4vw) top;
 }
 
 .container {
@@ -16,11 +68,18 @@ body {
     max-width: 900px;
     margin: 0 auto;
     padding: 24px 16px;
+    background: var(--content-panel-bg);
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(6, 21, 44, 0.10);
+}
+
+.calendar-table td:not(.calendar-saturday):not(.calendar-sunday):not(.calendar-holiday) {
+    background: var(--surface-bg);
 }
 
 .page-title {
     margin: 0 0 24px;
-    color: #f8fafc;
+    color: var(--text-strong);
     font-size: 28px;
 }
 
@@ -41,38 +100,38 @@ body {
     display: inline-flex;
     flex: none;
     overflow: hidden;
-    border: 1px solid #64748b;
+    border: 1px solid var(--switch-border);
     border-radius: 7px;
-    background: #1e293b;
+    background: var(--surface-bg);
     font-size: 13px;
     line-height: 1.3;
 }
 
 .page-switch a {
     padding: 5px 10px;
-    color: #cbd5e1;
+    color: var(--switch-text);
     text-decoration: none;
     white-space: nowrap;
 }
 
 .page-switch a+a {
-    border-left: 1px solid #64748b;
+    border-left: 1px solid var(--switch-border);
 }
 
 .page-switch a[aria-current="page"] {
-    background: #475569;
-    color: #f8fafc;
+    background: var(--button-bg);
+    color: var(--text-strong);
 }
 
 .page-switch a:hover,
 .page-switch a:focus-visible {
-    color: #f8fafc;
-    background: #334155;
+    color: var(--text-strong);
+    background: var(--switch-hover);
 }
 
 .page-switch a[aria-current="page"]:hover,
 .page-switch a[aria-current="page"]:focus-visible {
-    background: #475569;
+    background: var(--button-bg);
 }
 
 .todo-table-scroll {
@@ -82,12 +141,14 @@ body {
 .todo-table {
     width: 100%;
     min-width: 0;
+    table-layout: fixed;
     border-collapse: collapse;
+    background: var(--todo-table-bg);
 }
 
 .todo-table th,
 .todo-table td {
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border);
     padding: 3px 8px;
     text-align: left;
     vertical-align: middle;
@@ -96,7 +157,7 @@ body {
 
 .todo-table th {
     padding-block: 4px;
-    background: #1e293b;
+    background: var(--todo-table-header-bg);
     font-weight: bold;
 }
 
@@ -105,21 +166,44 @@ body {
 }
 
 .todo-table tr.todo-overdue td {
-    background: #7f1d1d;
+    background: var(--overdue-bg);
 }
 
 .priority-high-marker {
     margin-right: 4px;
-    color: #fda4af;
+    color: var(--priority-high);
     font-weight: bold;
 }
 
 .flash {
     margin: 0 0 16px;
-    border: 1px solid #94a3b8;
+    border: 1px solid var(--border-strong);
     border-radius: 8px;
     padding: 8px 12px;
-    background: #1e293b;
+    background: var(--content-panel-bg);
+
+    /* 通知が上からふわっと現れる */
+    animation: flash-appear 0.25s ease-out both;
+}
+
+/* 通知表示アニメーション */
+@keyframes flash-appear {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 動きを減らす設定への対応 */
+@media (prefers-reduced-motion: reduce) {
+    .flash {
+        animation: none;
+    }
 }
 
 .search-bar {
@@ -141,12 +225,139 @@ body {
 
 .form-input {
     width: 100%;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border);
     border-radius: 6px;
     padding: 7px 10px;
-    background: #1e293b;
-    color: #f8fafc;
+    background: var(--content-bg);
+    color: var(--text-strong);
     font: inherit;
+}
+
+.category-picker {
+    position: relative;
+}
+
+.category-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.category-trigger [data-category-label] {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.category-menu {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 4px);
+    left: 0;
+    width: max(100%, 290px);
+    max-width: calc(100vw - 48px);
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 4px;
+    background: var(--content-bg);
+    box-shadow: 0 8px 22px rgba(20, 40, 30, 0.16);
+}
+
+.category-menu[hidden],
+.category-menu [hidden] {
+    display: none;
+}
+
+.category-add,
+.category-option button,
+.category-editor button {
+    border: 0;
+    border-radius: 4px;
+    padding: 6px 8px;
+    background: transparent;
+    color: var(--text-main);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.category-add {
+    transition: transform 0.15s ease, filter 0.15s ease;
+    width: 100%;
+    color: var(--link);
+    text-align: left;
+}
+
+.category-option {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+}
+
+.category-option [data-category-select] {
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ジャンル追加・編集ボタンは従来の演出 */
+.category-add:hover,
+.category-editor button:hover {
+    background: var(--button-bg);
+    filter: brightness(1.08);
+    transform: translateY(-2px);
+}
+
+/* ジャンルの選択肢は青くハイライトするだけ */
+.category-option [data-category-select]:hover {
+    background: #d7eaff;
+    color: #174a82;
+    filter: none;
+    transform: none;
+}
+
+/* 選択肢は浮き上がらない */
+.category-option [data-category-select] {
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+@media (hover: hover) {
+    .category-option [data-category-select]:hover {
+        transform: none;
+        filter: none;
+    }
+}
+
+
+.category-editor {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 3px;
+}
+
+.category-editor input {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 5px 7px;
+    background: var(--content-bg);
+    color: var(--text-main);
+    font: inherit;
+    font-size: 14px;
+}
+
+.category-message {
+    margin: 4px 8px;
+    font-size: 13px;
 }
 
 .search-bar .form-input {
@@ -155,7 +366,7 @@ body {
 
 .error {
     margin: 4px 0 0;
-    color: #fca5a5;
+    color: var(--overdue-text);
     font-weight: bold;
 }
 
@@ -170,23 +381,23 @@ body {
 
 .btn {
     display: inline-block;
-    border: 1px solid #94a3b8;
+    border: 1px solid var(--border-strong);
     border-radius: 7px;
     padding: 7px 18px;
-    background: #475569;
-    color: #f8fafc;
+    background: var(--button-bg);
+    color: var(--text-strong);
     font: inherit;
     text-decoration: none;
     cursor: pointer;
 }
 
 .btn.sub {
-    background: #1e293b;
-    color: #f8fafc;
+    background: var(--surface-bg);
+    color: var(--text-strong);
 }
 
 .link {
-    color: #93c5fd;
+    color: var(--link);
     text-decoration: underline;
 }
 
@@ -261,12 +472,12 @@ body {
 
 .calendar-table th,
 .calendar-table td {
-    border: 2px solid #94a3b8;
+    border: 2px solid var(--border-strong);
     padding: 8px;
 }
 
 .calendar-table th {
-    background: #1e293b;
+    background: var(--surface-bg);
     text-align: center;
 }
 
@@ -281,20 +492,20 @@ body {
 }
 
 .calendar-empty {
-    background: #1e293b;
+    background: var(--surface-bg);
 }
 
 .calendar-table td.calendar-saturday {
-    background: #17365a;
+    background: var(--saturday-bg);
 }
 
 .calendar-table td.calendar-sunday {
-    background: #552436;
+    background: var(--sunday-bg);
 }
 
 /* 祝日の背景 */
 .calendar-table td.calendar-holiday {
-    background: #5b4216;
+    background: var(--holiday-bg);
     position: relative;
     isolation: isolate;
 }
@@ -309,7 +520,7 @@ body {
 
     font-size: clamp(38px, 4vw, 114px);
     font-weight: bold;
-    color: rgba(255, 225, 150, 0.08);
+    color: var(--holiday-mark);
 
     white-space: nowrap;
     pointer-events: none;
@@ -323,7 +534,7 @@ body {
 }
 
 .calendar-todo-overdue {
-    color: #fca5a5;
+    color: var(--overdue-text);
     font-weight: bold;
 }
 
@@ -358,7 +569,7 @@ body {
     padding: 0;
     border: 0;
     background: none;
-    color: #93c5fd;
+    color: var(--link);
     font: inherit;
     font-size: 12px;
     line-height: 1.35;
@@ -371,7 +582,7 @@ body {
 }
 
 .calendar-todo-link.calendar-todo-overdue {
-    color: #fca5a5;
+    color: var(--overdue-text);
 }
 
 .calendar-todo-dialog {
@@ -379,10 +590,10 @@ body {
     max-height: calc(100dvh - 32px);
     overflow: hidden;
     padding: 0;
-    border: 1px solid #94a3b8;
+    border: 1px solid var(--border-strong);
     border-radius: 8px;
-    background: #1e293b;
-    color: #e5e7eb;
+    background: var(--modal-panel-bg);
+    color: var(--text-main);
 }
 
 .calendar-todo-dialog[open] {
@@ -400,7 +611,7 @@ body {
     justify-content: space-between;
     gap: 12px;
     padding: 16px 20px;
-    border-bottom: 1px solid #475569;
+    border-bottom: 1px solid var(--button-bg);
 }
 
 .calendar-todo-dialog h2 {
@@ -413,7 +624,7 @@ body {
     flex: none;
     border: 0;
     background: none;
-    color: #f8fafc;
+    color: var(--text-strong);
     font-size: 26px;
     line-height: 1;
     cursor: pointer;
@@ -461,16 +672,109 @@ body {
 }
 
 .fortune-panel {
-    margin-top: 10px;
-    padding: 12px 16px;
-    border: 1px solid #475569;
-    border-radius: 8px;
-    background: #1e293b;
+    width: min(620px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    background: var(--modal-panel-bg);
+    color: var(--text-main);
+    box-shadow: 0 16px 40px rgba(6, 21, 44, 0.22);
+    transform-origin: center;
 }
 
-.fortune-panel[hidden],
+.fortune-panel[open] {
+    display: flex;
+    flex-direction: column;
+}
+
+.fortune-panel[open]:not(.is-closing) {
+    animation: fortune-pop 350ms ease-out both;
+}
+
+.fortune-panel[open].is-closing {
+    animation: fortune-fade-out 190ms ease-in both;
+}
+
+.fortune-panel::backdrop {
+    background-color: rgba(0, 0, 0, 0.55);
+}
+
+.fortune-panel[open]:not(.is-closing)::backdrop {
+    animation: fortune-backdrop-in 230ms ease-out both;
+}
+
+.fortune-panel[open].is-closing::backdrop {
+    animation: fortune-backdrop-out 190ms ease-in both;
+}
+
+@keyframes fortune-pop {
+    0% {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fortune-fade-out {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    to {
+        transform: scale(0.92);
+        opacity: 0;
+    }
+}
+
+@keyframes fortune-backdrop-in {
+    from {
+        background-color: rgba(0, 0, 0, 0);
+    }
+
+    to {
+        background-color: rgba(0, 0, 0, 0.55);
+    }
+}
+
+@keyframes fortune-backdrop-out {
+    from {
+        background-color: rgba(0, 0, 0, 0.55);
+    }
+
+    to {
+        background-color: rgba(0, 0, 0, 0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .fortune-panel[open],
+    .fortune-panel[open]::backdrop {
+        animation: none !important;
+    }
+}
+
 .fortune-panel [hidden] {
     display: none;
+}
+
+.fortune-content {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 12px 20px 20px;
 }
 
 .fortune-top,
@@ -483,7 +787,21 @@ body {
 }
 
 .fortune-top {
+    flex: none;
     justify-content: space-between;
+    flex-wrap: nowrap;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--button-bg);
+}
+
+.fortune-top strong {
+    flex: 1;
+    min-width: 0;
+    font-size: 18px;
+}
+
+#fortune-settings-toggle {
+    margin-left: auto;
 }
 
 .fortune-form-row {
@@ -493,10 +811,10 @@ body {
 #fortune-birth {
     max-width: 100%;
     padding: 5px 8px;
-    border: 1px solid #94a3b8;
+    border: 1px solid var(--border-strong);
     border-radius: 6px;
-    background: #0f172a;
-    color: #f8fafc;
+    background: var(--input-inset-bg);
+    color: var(--text-strong);
     font: inherit;
 }
 
@@ -516,37 +834,37 @@ body {
 }
 
 #fortune-color {
-    color: #e5e7eb;
+    color: var(--text-main);
     font-weight: 600;
 }
 
 #fortune-color[data-color="緑"] {
-    color: #86efac;
+    color: #32734a;
 }
 
 #fortune-color[data-color="赤"] {
-    color: #fca5a5;
+    color: var(--overdue-text);
 }
 
 #fortune-color[data-color="黄"] {
-    color: #fde047;
+    color: #8b6709;
 }
 
 #fortune-color[data-color="白"] {
-    color: #f8fafc;
+    color: var(--text-strong);
 }
 
 #fortune-color[data-color="青"] {
-    color: #93c5fd;
+    color: #315e8c;
 }
 
 #fortune-color[data-color="黒"] {
-    color: #cbd5e1;
+    color: var(--text-main);
 }
 
 .fortune-error {
     margin: 8px 0 0;
-    color: #fca5a5;
+    color: var(--overdue-text);
 }
 
 .fortune-note {
@@ -555,7 +873,7 @@ body {
     align-items: baseline;
     gap: 4px 16px;
     margin-top: 10px;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 12px;
 }
 
@@ -564,7 +882,7 @@ body {
     padding: 0;
     border: 0;
     background: none;
-    color: #93c5fd;
+    color: var(--link);
     font: inherit;
     text-decoration: underline;
     cursor: pointer;
@@ -770,8 +1088,8 @@ body {
 }
 
 .calendar-view-switch .btn.active {
-    background: #64748b;
-    border-color: #93c5fd;
+    background: var(--button-active);
+    border-color: var(--accent);
 }
 
 .calendar-week-view td {
@@ -818,19 +1136,6 @@ body {
     line-height: 1.4;
 }
 
-/* やること一覧：タイトルを1行に省略 */
-.todo-table {
-    table-layout: fixed;
-}
-
-/* Todo一覧：列ごとの幅を調整 */
-.todo-list-page .todo-table {
-    width: 100%;
-    min-width: 0;
-    table-layout: fixed;
-}
-
-
 /* やること：残りの幅を使う */
 .todo-list-page .todo-table th:nth-child(1) {
     width: auto;
@@ -858,7 +1163,7 @@ body {
 
 /* 操作：3つの操作が横並びになる幅 */
 .todo-list-page .todo-table th:nth-child(6) {
-    width: 180px;
+    width: 120px;
 }
 
 
@@ -868,15 +1173,10 @@ body {
     text-overflow: ellipsis;
 }
 
-/* 優先度の見出しを1行表示 */
-.todo-table th:nth-child(3) {
-    white-space: nowrap;
-}
-
 /* 表の上に操作項目を配置 */
 .todo-table-toolbar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 130px 55px 105px 70px 180px;
+    grid-template-columns: minmax(0, 1fr) 130px 55px 105px 70px 120px;
     align-items: end;
     width: 100%;
     margin-top: -20px;
@@ -914,11 +1214,6 @@ body {
     font-size: 13px;
 }
 
-/* 既存の列幅と操作項目の位置を合わせる */
-.todo-table {
-    width: 100%;
-}
-
 .todo-filter-row .search-bar {
     margin-bottom: 0;
 }
@@ -937,4 +1232,455 @@ body {
 /* 月・週切り替え時のスクロールバーによる横ずれを防ぐ */
 html {
     scrollbar-gutter: stable;
+}
+
+/* ボタン共通：マウスを乗せると少し浮く */
+button,
+.btn,
+.button,
+a.btn,
+a.button,
+input[type="submit"],
+input[type="button"] {
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+/* ホバー時のアニメーション */
+@media (hover: hover) {
+
+    button:not(:disabled):hover,
+    .btn:hover,
+    .button:hover,
+    input[type="submit"]:not(:disabled):hover,
+    input[type="button"]:not(:disabled):hover {
+        transform: translateY(-2px);
+        filter: brightness(1.08);
+    }
+}
+
+/* クリック時は元の位置に戻る */
+button:not(:disabled):active,
+.btn:active,
+.button:active,
+input[type="submit"]:not(:disabled):active,
+input[type="button"]:not(:disabled):active {
+    transform: translateY(0);
+}
+
+/* 動きを減らす設定への対応 */
+@media (prefers-reduced-motion: reduce) {
+
+    button,
+    .btn,
+    .button,
+    input[type="submit"],
+    input[type="button"] {
+        transition: none;
+    }
+}
+
+/* 今日の運勢：星評価 */
+#fortune-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 28px;
+    letter-spacing: 3px;
+    line-height: 1.3;
+}
+
+.fortune-star-filled {
+    color: #f6c84c;
+    text-shadow: 0 1px 2px rgba(160, 108, 18, 0.35),
+        0 0 5px rgba(255, 224, 128, 0.5);
+}
+
+.fortune-star-empty {
+    color: #cbd0d5;
+}
+
+/* Todo一覧：通知エリア */
+.todo-toolbar-notification {
+    position: relative;
+    min-width: 0;
+    height: 0;
+    align-self: center;
+}
+
+/* 小さな通知カード */
+.toast-notice {
+    position: absolute;
+    top: -60px;
+    right: 30px;
+    transform: translateY(-50%);
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    max-width: 220px;
+    box-sizing: border-box;
+
+    padding: 7px 9px;
+    border: 1px solid #cce8d4;
+    border-left: 3px solid #43a16c;
+    border-radius: 6px;
+
+    background: rgba(245, 251, 246, 0.97);
+    box-shadow: 0 3px 10px rgba(30, 70, 50, 0.12);
+    color: #29483a;
+    z-index: 10;
+    animation: toast-appear 0.25s ease-out both;
+}
+
+.toast-notice-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.toast-notice-heading {
+    color: #458363;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.toast-notice-message {
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.toast-notice-close {
+    padding: 2px 4px;
+    border: none;
+    background: transparent;
+    color: #788e80;
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.toast-notice-close:hover {
+    color: #29483a;
+}
+
+@keyframes toast-appear {
+    from {
+        opacity: 0;
+        transform: translateY(calc(-50% - 8px));
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(-50%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast-notice {
+        animation: none;
+    }
+}
+
+/* 状態列は改行しない */
+.todo-status-cell {
+    white-space: nowrap;
+}
+
+/* 優先度：独自選択メニュー */
+.priority-picker {
+    position: relative;
+    width: 100%;
+}
+
+/* 元のselectは値の送信用に残す */
+.priority-native-select {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ジャンル選択と同じ見た目 */
+.priority-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* 選択肢の表示領域 */
+.priority-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    padding: 5px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 5px 14px rgba(30, 60, 90, 0.15);
+}
+
+.priority-menu[hidden] {
+    display: none;
+}
+
+/* 選択肢 */
+.priority-menu [data-priority-value] {
+    display: block;
+    width: 100%;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-main);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+/* ジャンルと同じ青色。浮き上がりなし */
+@media (hover: hover) {
+    .priority-menu [data-priority-value]:hover {
+        background: #d7eaff;
+        color: #174a82;
+        transform: none;
+        filter: none;
+    }
+}
+
+/* キーボード操作時も選択位置が分かる */
+.priority-menu [data-priority-value]:focus-visible {
+    outline: 2px solid #174a82;
+    outline-offset: -2px;
+    background: #d7eaff;
+    color: #174a82;
+}
+
+/* 動きを減らす設定 */
+@media (prefers-reduced-motion: reduce) {
+    .priority-menu [data-priority-value] {
+        transition: none;
+    }
+}
+
+/* 優先度の選択メニューは浮かせない */
+@media (hover: hover) {
+
+    .priority-trigger:hover,
+    .priority-menu [data-priority-value]:hover {
+        transform: none;
+        filter: none;
+    }
+}
+
+/* Todo一覧：操作アイコン */
+.todo-operation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.todo-operation form {
+    margin: 0;
+}
+
+.todo-operation-links {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.todo-icon-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: #64748b;
+    font-size: 19px;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+/* 共通ボタンの浮き上がり演出を無効化 */
+@media (hover: hover) {
+    .todo-icon-action:hover {
+        background: #d7eaff;
+        transform: none;
+        filter: none;
+    }
+}
+
+.todo-icon-action:focus-visible {
+    outline: 2px solid #174a82;
+    outline-offset: 2px;
+}
+
+.todo-pin-action.is-pinned {
+    background: #fff2cf;
+}
+
+.todo-edit-action {
+    color: #537d9a;
+}
+
+.todo-delete-action {
+    color: #b96767;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .todo-icon-action {
+        transition: none;
+    }
+}
+
+/* カレンダーの日付別Todo一覧 */
+.calendar-todo-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 10px;
+}
+
+/* Todo名が長い場合は折り返す */
+.calendar-todo-list-item>span {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* 編集・削除アイコンを右側に並べる */
+.calendar-todo-list-item .todo-operation-links {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 5px;
+}
+
+/* アイコンのホバーは浮かせず青くする */
+@media (hover: hover) {
+    .calendar-todo-list-item .todo-icon-action:hover {
+        background: #d7eaff;
+        transform: none;
+        filter: none;
+    }
+}
+
+
+/* カレンダー：上下のパネルを分離 */
+.container.calendar-page {
+    background: transparent;
+    box-shadow: none;
+    padding-top: 0;
+}
+
+/* 上側のパネル */
+/* カレンダー上側のパネル */
+.calendar-page>.calendar-toolbar {
+    background: var(--content-panel-bg);
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(6, 21, 44, 0.10);
+    padding: 24px 16px;
+    margin: 8px -16px 0;
+    height: auto;
+    min-height: 96px;
+}
+
+/* 空が見える8pxの隙間 */
+.calendar-page>.calendar-panel-gap {
+    height: 8px;
+    background: transparent;
+}
+
+/* 下側のカレンダーパネル */
+.calendar-page>.calendar-scroll {
+    background: var(--content-panel-bg);
+    padding: 16px;
+    margin: 0 -16px;
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(6, 21, 44, 0.10);
+}
+
+/* カレンダー：上側の隙間だけ残す */
+.container.calendar-page {
+    padding-top: 8px;
+}
+
+.calendar-page>.calendar-toolbar {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.calendar-page>.calendar-panel-gap {
+    display: none;
+}
+
+.calendar-page>.calendar-scroll {
+    margin-top: 0;
+}
+
+/* やること一覧：パネルの上側に8pxの隙間 */
+.container.todo-list-page {
+    margin-top: 8px;
+}
+
+/* カレンダー：一体型パネルに戻す */
+.container.calendar-page {
+    background: var(--content-panel-bg);
+    box-shadow: 0 6px 24px rgba(6, 21, 44, 0.10);
+    padding: 24px 16px;
+    margin-top: 8px;
+    border-radius: 14px;
+}
+
+/* タイトル部分を独立したパネルにしない */
+.calendar-page>.calendar-toolbar {
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0 0 10px;
+    height: 48px;
+    min-height: 0;
+}
+
+/* 途中に追加した隙間をなくす */
+.calendar-page>.calendar-panel-gap {
+    display: none;
+}
+
+/* カレンダー本体も独立したパネルにしない */
+.calendar-page>.calendar-scroll {
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+}
+
+/* 新規登録画面：上側に余白を確保 */
+.todo-form-page {
+    margin-top: 32px;
+}
+
+/* 新規登録・削除確認画面の上に余白を作る */
+.todo-form-page,
+.todo-delete-page {
+    margin-top: 32px;
 }

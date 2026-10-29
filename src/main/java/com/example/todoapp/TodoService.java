@@ -5,15 +5,18 @@ import java.time.LocalDate;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 public class TodoService {
 
     private final TodoMapper todoMapper;
+    private final CategoryService categoryService;
 
-    public TodoService(TodoMapper todoMapper) {
+    public TodoService(TodoMapper todoMapper, CategoryService categoryService) {
         this.todoMapper = todoMapper;
+        this.categoryService = categoryService;
     }
 
     public List<Todo> search(String keyword, String category, String order) {
@@ -42,13 +45,17 @@ public class TodoService {
         return todoMapper.findById(id);
     }
 
+    @Transactional
     public int create(Todo todo) {
+        todo.setCategory(categoryService.ensureRegistered(todo.getCategory()));
         int result = todoMapper.insert(todo);
         log.info("Todo created");
         return result;
     }
 
+    @Transactional
     public int update(Todo todo) {
+        todo.setCategory(categoryService.ensureRegistered(todo.getCategory()));
         int result = todoMapper.update(todo);
         log.info("Todo updated: id={}", todo.getId());
         return result;
