@@ -33,7 +33,7 @@ public class TodoCsvController {
             @RequestParam(name = "showCompleted", defaultValue = "false") boolean showCompleted,
             @RequestParam(name = "trash", defaultValue = "0") String trash) {
         boolean viewingTrash = "1".equals(trash);
-        String sortOrder = "desc".equals(order) ? "desc" : "asc";
+        String sortOrder = "manual".equals(order) ? "manual" : "desc".equals(order) ? "desc" : "asc";
         List<Todo> todos = todoService.searchForCsv(keyword, category, sortOrder, showCompleted, viewingTrash);
 
         StringBuilder csv = new StringBuilder("\uFEFF");

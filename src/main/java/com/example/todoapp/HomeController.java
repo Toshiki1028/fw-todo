@@ -1,6 +1,7 @@
 package com.example.todoapp;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.ResponseEntity;
 
 import jakarta.validation.Valid;
 
@@ -36,14 +39,12 @@ public class HomeController {
     public String todos(
             @RequestParam(name = "keyword", defaultValue = "") String keyword,
             @RequestParam(name = "category", defaultValue = "") String category,
-            @RequestParam(name = "order", defaultValue = "asc") String order,
+            @RequestParam(name = "order", defaultValue = "manual") String order,
             @RequestParam(name = "hideCompleted", defaultValue = "false") boolean hideCompleted,
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "trash", defaultValue = "0") String trash,
             Model model) {
-        String sortOrder = "asc".equals(order) ? "asc"
-                : "desc".equals(order) ? "desc"
-                        : "new";
+        String sortOrder = normalizeOrder(order);
         boolean viewingTrash = "1".equals(trash);
         boolean showCompleted = !hideCompleted;
         int totalCount = todoService.countForPage(keyword, category, showCompleted, viewingTrash);
@@ -62,6 +63,26 @@ public class HomeController {
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("trash", viewingTrash ? 1 : 0);
         return "todos";
+    }
+
+    private String normalizeOrder(String order) {
+        return "asc".equals(order) || "desc".equals(order) ? order : "manual";
+    }
+
+    @PostMapping("/todos/reorder")
+    @ResponseBody
+    public ResponseEntity<Void> reorder(
+            @RequestParam("ids") List<Long> ids,
+            @RequestParam(name = "keyword", defaultValue = "") String keyword,
+            @RequestParam(name = "category", defaultValue = "") String category,
+            @RequestParam(name = "hideCompleted", defaultValue = "false") boolean hideCompleted,
+            @RequestParam(name = "page", defaultValue = "1") int page) {
+        if (page < 1 || page > Integer.MAX_VALUE / PAGE_SIZE) {
+            return ResponseEntity.badRequest().build();
+        }
+        return todoService.reorderPage(ids, keyword, category, !hideCompleted, page, PAGE_SIZE)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.status(409).build();
     }
 
     @GetMapping("/todos/new")
@@ -169,6 +190,49 @@ public class HomeController {
         return "redirect:/todos";
     }
 
+    @PostMapping("/todos/delete-selected")
+    public String deleteSelected(
+            @RequestParam(name = "selectedIds", required = false) java.util.List<Long> selectedIds,
+            @RequestParam(name = "confirmed", defaultValue = "false") boolean confirmed,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (selectedIds == null || selectedIds.isEmpty()) {
+            redirectAttributes.addFlashAttribute("message", "削除するやることを選択してください");
+            return "redirect:/todos";
+        }
+
+        if (!confirmed) {
+            java.util.List<Todo> selectedTodos = new java.util.ArrayList<>();
+
+            for (Long id : selectedIds) {
+                Todo todo = todoService.findById(id);
+                if (todo != null) {
+                    selectedTodos.add(todo);
+                }
+            }
+
+            if (selectedTodos.isEmpty()) {
+                redirectAttributes.addFlashAttribute("message", "削除対象が見つかりませんでした");
+                return "redirect:/todos";
+            }
+
+            model.addAttribute("selectedTodos", selectedTodos);
+            return "delete-selected";
+        }
+
+        int deletedCount = 0;
+
+        for (Long id : new java.util.LinkedHashSet<>(selectedIds)) {
+            deletedCount += todoService.delete(id);
+        }
+
+        redirectAttributes.addFlashAttribute(
+                "message", deletedCount + "件削除しました");
+
+        return "redirect:/todos";
+    }
+
     @PostMapping("/todos/{id}/restore")
     public String restore(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         int restored = todoService.restore(id);
@@ -181,14 +245,14 @@ public class HomeController {
             @PathVariable Long id,
             @RequestParam(name = "keyword", defaultValue = "") String keyword,
             @RequestParam(name = "category", defaultValue = "") String category,
-            @RequestParam(name = "order", defaultValue = "asc") String order,
+            @RequestParam(name = "order", defaultValue = "manual") String order,
             @RequestParam(name = "hideCompleted", defaultValue = "false") boolean hideCompleted,
             @RequestParam(name = "page", defaultValue = "1") int page,
             RedirectAttributes redirectAttributes) {
         int changed = todoService.togglePinned(id);
         redirectAttributes.addAttribute("keyword", keyword);
         redirectAttributes.addAttribute("category", category);
-        redirectAttributes.addAttribute("order", "desc".equals(order) ? "desc" : "asc");
+        redirectAttributes.addAttribute("order", normalizeOrder(order));
         redirectAttributes.addAttribute("hideCompleted", hideCompleted);
         redirectAttributes.addAttribute("page", page);
         redirectAttributes.addFlashAttribute("message", changed > 0 ? "印を切り替えました" : "見つかりませんでした");

@@ -49,4 +49,8 @@ public interface TodoMapper {
     int restore(Long id);
 
     int togglePinned(Long id);
+
+    List<Todo> lockManualOrder();
+
+    int setSortPosition(@Param("id") Long id, @Param("position") long position);
 }

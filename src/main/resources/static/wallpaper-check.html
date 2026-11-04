@@ -1,0 +1,41 @@
+<!doctype html><html lang="ja"><head>
+<meta charset="utf-8"><script src="/theme.js?v=wallpaper-1"></script>
+<link rel="stylesheet" href="/css/style.css?v=wallpaper-1">
+</head><body><button data-wallpaper-open>壁紙</button><pre id="result">RUNNING</pre>
+<script>
+window.addEventListener('load', () => {
+  const result = document.getElementById('result');
+  function check(value, message) { if (!value) throw new Error(message); }
+  try {
+    if (!location.search) {
+      localStorage.removeItem('todo.wallpapers.v1');
+      document.querySelector('[data-wallpaper-open]').click();
+      const cards = document.querySelectorAll('.wallpaper-card');
+      check(cards.length === 6, 'six cards');
+      check(document.querySelector('[data-wallpaper="day-default.jpg"]').classList.contains('is-day'), 'day default');
+      check(document.querySelector('[data-wallpaper="night-default.jpg"]').classList.contains('is-night'), 'night default');
+      const nature = document.querySelector('[data-wallpaper="nature.jpg"]');
+      nature.click();
+      document.querySelector('[data-wallpaper-period="day"]').click();
+      nature.click();
+      document.querySelector('[data-wallpaper-period="night"]').click();
+      check(nature.classList.contains('is-both'), 'both borders');
+      check(nature.querySelectorAll('.wallpaper-badge').length === 2, 'both labels');
+      check(getComputedStyle(document.documentElement).backgroundImage.includes('nature.jpg'), 'immediate background');
+      document.querySelector('[data-wallpaper="space.jpg"]').click();
+      document.querySelector('[data-wallpaper-period="night"]').click();
+      todoThemeTest.forceNight();
+      check(getComputedStyle(document.documentElement).backgroundImage.includes('space.jpg'), 'night switch');
+      todoThemeTest.reset();
+      location.search = '?saved';
+    } else {
+      const saved = JSON.parse(localStorage.getItem('todo.wallpapers.v1'));
+      check(saved.day === 'nature.jpg' && saved.night === 'space.jpg', 'persistence');
+      document.querySelector('[data-wallpaper-open]').click();
+      check(document.querySelector('[data-wallpaper="nature.jpg"]').classList.contains('is-day'), 'saved day frame');
+      check(document.querySelector('[data-wallpaper="space.jpg"]').classList.contains('is-night'), 'saved night frame');
+      result.textContent = 'PASS wallpaper browser check';
+    }
+  } catch (error) { result.textContent = 'FAIL ' + error.message; }
+});
+</script></body></html>

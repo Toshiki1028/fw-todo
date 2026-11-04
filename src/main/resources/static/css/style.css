@@ -1,4 +1,5 @@
 :root {
+    --wallpaper-image: url("../images/wallpapers/day-default.jpg");
     --page-bg: #7ac5e9;
     --content-bg: #fafcf8;
     --content-panel-bg: rgba(250, 252, 248, 0.83);
@@ -30,6 +31,7 @@
 
 :root[data-theme="night"] {
     --page-bg: #06152c;
+    --wallpaper-image: url("../images/wallpapers/night-default.jpg");
 }
 
 * {
@@ -38,10 +40,8 @@
 
 html {
     background-color: var(--page-bg);
-    background-image: url("../images/day-sky-soft.png"),
-        radial-gradient(circle at 88% 7%, #fff4b7 0, #ffebaa 12%, transparent 40%),
-        linear-gradient(160deg, #72c5f1 0%, #aadbef 58%, #e1f2ed 100%);
-    background-position: right top;
+    background-image: var(--wallpaper-image);
+    background-position: center center;
     background-size: cover;
     background-attachment: fixed;
     background-repeat: no-repeat;
@@ -54,13 +54,6 @@ body {
     font-family: sans-serif;
     font-size: 16px;
     line-height: 1.6;
-}
-
-:root[data-theme="night"] {
-    background-image: url("../images/night-sky-soft.png"),
-        radial-gradient(circle at 95% 8%, #e8d7a0 0, #8e826b 16%, transparent 42%),
-        linear-gradient(160deg, #07152e 0%, #0b274d 62%, #071830 100%);
-    background-position: calc(100% + 4vw) top;
 }
 
 .container {
@@ -107,14 +100,20 @@ body {
     line-height: 1.3;
 }
 
-.page-switch a {
+.page-switch a,
+.page-switch button {
     padding: 5px 10px;
     color: var(--switch-text);
     text-decoration: none;
     white-space: nowrap;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    line-height: inherit;
+    cursor: pointer;
 }
 
-.page-switch a+a {
+.page-switch>*+* {
     border-left: 1px solid var(--switch-border);
 }
 
@@ -124,14 +123,149 @@ body {
 }
 
 .page-switch a:hover,
-.page-switch a:focus-visible {
+.page-switch a:focus-visible,
+.page-switch button:hover,
+.page-switch button:focus-visible {
     color: var(--text-strong);
     background: var(--switch-hover);
+    transform: none;
+    filter: none;
 }
 
 .page-switch a[aria-current="page"]:hover,
 .page-switch a[aria-current="page"]:focus-visible {
     background: var(--button-bg);
+}
+
+.wallpaper-dialog {
+    width: min(560px, calc(100vw - 24px));
+    max-height: min(90vh, 760px);
+    margin: auto;
+    padding: 16px;
+    overflow-y: auto;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    background: var(--modal-panel-bg);
+    color: var(--text-main);
+    box-shadow: 0 12px 36px rgba(6, 21, 44, .25);
+}
+
+.wallpaper-dialog::backdrop {
+    background: rgba(0, 0, 0, .6);
+}
+
+.wallpaper-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.wallpaper-close {
+    border: 0;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.wallpaper-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.wallpaper-card {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    padding: 0;
+    overflow: hidden;
+    border: 3px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-bg);
+    cursor: pointer;
+}
+
+.wallpaper-card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.wallpaper-card.is-day {
+    border-color: #F59E0B;
+}
+
+.wallpaper-card.is-night {
+    border-color: #38BDF8;
+}
+
+.wallpaper-card.is-both {
+    border-color: #F59E0B;
+    box-shadow: 0 0 0 3px #38BDF8;
+}
+
+.wallpaper-card.is-chosen:not(.is-both) {
+    outline: 2px solid var(--text-strong);
+    outline-offset: 4px;
+}
+
+.wallpaper-badges {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    pointer-events: none;
+}
+
+.wallpaper-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(6, 21, 44, .8);
+    color: white;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.wallpaper-badge-day {
+    border-left: 3px solid #F59E0B;
+}
+
+.wallpaper-badge-night {
+    border-left: 3px solid #38BDF8;
+}
+
+.wallpaper-assign {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.wallpaper-assign[hidden] {
+    display: none;
+}
+
+@media (max-width: 500px) {
+    .wallpaper-dialog {
+        padding: 12px;
+    }
+
+    .wallpaper-grid {
+        gap: 8px;
+    }
+
+    .wallpaper-badge {
+        font-size: 9px;
+    }
 }
 
 .todo-table-scroll {
@@ -1136,38 +1270,96 @@ body {
     line-height: 1.4;
 }
 
-/* やること：残りの幅を使う */
+
+/* 1列目：チェックボックス */
 .todo-list-page .todo-table th:nth-child(1) {
+    width: 36px;
+    padding: 4px;
+}
+
+/* 2列目：やること */
+.todo-list-page .todo-table th:nth-child(2) {
     width: auto;
 }
 
-/* ジャンル：必要な文字数分 */
-.todo-list-page .todo-table th:nth-child(2) {
-    width: 130px;
-}
-
-/* 優先度：できるだけ狭く */
+/* 3列目：ジャンル */
 .todo-list-page .todo-table th:nth-child(3) {
-    width: 55px;
+    width: 140px;
 }
 
-/* 期限：日付が収まる幅 */
+/* 4列目：優先度 */
 .todo-list-page .todo-table th:nth-child(4) {
+    width: 65px;
+}
+
+/* 5列目：期限 */
+.todo-list-page .todo-table th:nth-child(5) {
     width: 105px;
 }
 
-/* 状態：未完了が収まる幅 */
-.todo-list-page .todo-table th:nth-child(5) {
-    width: 70px;
-}
-
-/* 操作：3つの操作が横並びになる幅 */
+/* 6列目：状態 */
 .todo-list-page .todo-table th:nth-child(6) {
-    width: 120px;
+    width: 80px;
+}
+
+/* 7列目：操作 */
+.todo-list-page .todo-table th:nth-child(7) {
+    width: 100px;
+}
+
+/* 8列目：ドラッグ */
+.todo-list-page .todo-table th:nth-child(8) {
+    width: 40px;
+    padding-inline: 0;
+}
+
+/* やることの文字を1行で表示 */
+.todo-list-page .todo-table td:nth-child(2) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 
-.todo-table td:first-child {
+.todo-list-page .todo-table td.todo-reorder-cell {
+    padding-inline: 0;
+    text-align: center;
+}
+
+.todo-drag-handle {
+    display: inline-block;
+    padding: 4px;
+    color: #64748b;
+    cursor: grab;
+    user-select: none;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.todo-drag-handle.is-disabled {
+    opacity: .45;
+    cursor: default;
+}
+
+.todo-dragging .todo-drag-handle {
+    cursor: grabbing;
+}
+
+.todo-table tbody tr.todo-dragging td {
+    opacity: .55;
+}
+
+.todo-table tbody tr.todo-drop-before td {
+    box-shadow: inset 0 3px var(--accent);
+}
+
+.todo-table tbody tr.todo-drop-after td {
+    box-shadow: inset 0 -3px var(--accent);
+}
+
+
+/* やること列だけ、長い文字を省略表示する */
+.todo-list-page .todo-table td:nth-child(2) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1176,11 +1368,16 @@ body {
 /* 表の上に操作項目を配置 */
 .todo-table-toolbar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 130px 55px 105px 70px 120px;
+    grid-template-columns: minmax(0, 1fr) 130px 55px 105px 70px 120px 40px;
     align-items: end;
     width: 100%;
     margin-top: -20px;
     margin-bottom: 2px;
+}
+
+.todo-toolbar-manual {
+    font-size: 14px;
+    padding-left: 8px;
 }
 
 
@@ -1683,4 +1880,82 @@ input[type="button"]:not(:disabled):active {
 .todo-form-page,
 .todo-delete-page {
     margin-top: 32px;
+}
+
+/* 削除ボタンを「絞り込む」と同じサイズにする */
+.todo-list-page .todo-filter-row .bulk-delete-button {
+    padding: 5px 12px;
+    font-size: 14px;
+    line-height: inherit;
+    white-space: nowrap;
+    margin: 0;
+}
+
+/* 未選択時も文字が見える濃さにする */
+.todo-list-page .todo-filter-row .bulk-delete-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* 絞り込むボタンと削除ボタンの間隔 */
+.todo-list-page .todo-filter-row {
+    column-gap: 8px;
+}
+
+/* Todo一覧：縦方向をコンパクトにする */
+
+/* 表の各行を少し低くする */
+.todo-list-page .todo-table tbody tr {
+    height: 36px;
+}
+
+/* セルの上下余白を減らす */
+.todo-list-page .todo-table th,
+.todo-list-page .todo-table td {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+/* 検索欄と表の間を詰める */
+.todo-list-page .todo-filter-row {
+    margin-bottom: 4px;
+}
+
+/* 表の上の操作項目の余白を減らす */
+.todo-list-page .todo-table-toolbar {
+    margin-top: 0;
+    margin-bottom: 2px;
+}
+
+/* ページ番号の上の余白を減らす */
+.todo-list-page .pagination {
+    margin-top: 8px;
+}
+
+/* やること一覧：パネル上下の余白を縮める */
+.container.todo-list-page {
+    padding-top: 12px;
+    padding-bottom: 8px;
+}
+
+/* カレンダー画面：パネル上下の余白を縮める */
+.container.calendar-page {
+    padding-top: 12px;
+    padding-bottom: 8px;
+}
+
+/* カレンダー：月表示の日付マスをコンパクトにする */
+.calendar-page .calendar-table:not(.calendar-week-view) td {
+    height: 95px;
+    padding: 4px 6px;
+}
+
+/* 曜日の見出しも少し低くする */
+.calendar-page .calendar-table th {
+    padding: 4px 6px;
+}
+
+/* カレンダー下の天気・運勢との余白 */
+.calendar-page .calendar-footer {
+    margin-top: 8px;
 }

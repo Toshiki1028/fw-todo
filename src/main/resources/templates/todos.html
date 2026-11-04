@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>やること一覧</title>
-    <script src="/theme.js?v=theme-3"></script>
-    <link rel="stylesheet" href="/css/style.css?v=theme-3">
+    <script src="/theme.js?v=wallpaper-1"></script>
+    <link rel="stylesheet" href="/css/style.css?v=wallpaper-1">
 </head>
 
 <body>
@@ -13,6 +13,7 @@
         <div class="page-heading">
             <h1 class="page-title" th:text="${trash == 1 ? '削除済みのやること' : 'やること一覧'}">やること一覧</h1>
             <nav class="page-switch" aria-label="表示画面の切り替え">
+                <button type="button" data-wallpaper-open>壁紙</button>
                 <a th:href="@{/todos}" aria-current="page"><span aria-hidden="true">≡</span> 一覧</a>
                 <a th:href="@{/calendar}"><span aria-hidden="true">▦</span> カレンダー</a>
             </nav>
@@ -37,10 +38,21 @@
                 <button class="btn" type="submit">絞り込む</button>
             </form>
 
+            <button type="submit" class="btn bulk-delete-button" form="bulk-delete-form" th:if="${trash == 0}" disabled>
+                削除
+            </button>
+            </form>
+
 
         </div>
         <p th:if="${#lists.isEmpty(todos)}" th:text="${trash == 1 ? '削除済みのやることはありません' : '表示できるやることはありません'}">
             表示できるやることはありません</p>
+        <form id="bulk-delete-form" th:action="@{/todos/delete-selected}" method="post" th:if="${trash == 0}">
+        </form>
+
+        <form id="bulk-delete-form" th:action="@{/todos/delete-selected}" method="post" th:if="${trash == 0}">
+        </form>
+
         <div class="todo-table-area" th:if="${trash == 0 or !#lists.isEmpty(todos)}">
 
             <!-- 表の見出しの真上に配置する操作項目 -->
@@ -71,6 +83,11 @@
                 <div class="todo-toolbar-empty" th:if="${trash == 1}"></div>
 
 
+                <div class="todo-toolbar-empty" th:if="${trash == 1}"></div>
+
+                <!-- 選択したTodoを削除確認画面へ送る -->
+
+
                 <div class="todo-toolbar-notification">
                     <div class="toast-notice" th:if="${flashMessage != null or message != null}" role="status"
                         aria-live="polite">
@@ -91,19 +108,28 @@
                 <table class="todo-table">
                     <thead>
                         <tr>
+                            <th class="todo-select-column">
+                                <input type="checkbox" id="select-all-todos" aria-label="すべて選択">
+                            </th>
                             <th>やること</th>
                             <th>ジャンル</th>
                             <th>優先度</th>
                             <th>期限</th>
                             <th>状態</th>
                             <th>操作</th>
+                            <th aria-label="並び替え"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="todo : ${todos}"
                             th:classappend="${trash == 0 and todo.dueDate != null and todo.dueDate.isBefore(today) and todo.completed != true} ? 'todo-overdue' : ''">
-                            <td><span th:if="${todo.pinned}" aria-label="印付き">📌 </span><span
-                                    th:text="${todo.title}">やること</span>
+
+                            <td class="todo-select-column">
+                                <input type="checkbox" class="todo-select-checkbox" name="selectedIds"
+                                    th:value="${todo.id}" form="bulk-delete-form" aria-label="削除対象として選択">
+                            </td>
+
+                            <td><span th:if="${todo.pinned}" th:text="${todo.title}">やること</span>
                             </td>
                             <td th:text="${todo.category}">ジャンル</td>
                             <td>
@@ -146,31 +172,31 @@
                                             <span aria-hidden="true">✎</span>
                                         </a>
 
-                                        <a class="todo-icon-action todo-delete-action"
-                                            th:href="@{/todos/{id}/delete(id=${todo.id})}" title="削除" aria-label="削除">
-                                            <span aria-hidden="true">×</span>
-                                        </a>
+
                                     </div>
 
                                 </div>
 
+                            </td>
+                            <td th:if="${trash == 1}">
+                                <form th:action="@{/todos/{id}/restore(id=${todo.id})}" method="post">
+                                    <button class="btn" type="submit">戻す</button>
+                                </form>
+                            </td>
+                            <td class="todo-reorder-cell"><span class="todo-drag-handle"
+                                    th:classappend="${order != 'manual' or trash == 1} ? ' is-disabled' : ''"
+                                    th:attr="aria-label=${order == 'manual' and trash == 0 ? 'ドラッグして並び替え' : '手動順に切り替えると並び替えできます'}"
+                                    title="ドラッグして並び替え">⋮⋮</span></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            </td>
-            <td th:if="${trash == 1}">
-                <form th:action="@{/todos/{id}/restore(id=${todo.id})}" method="post">
-                    <button class="btn" type="submit">戻す</button>
-                </form>
-            </td>
-            </tr>
-            </tbody>
-            </table>
         </div>
-    </div>
-    <nav class="pagination" th:if="${totalPages > 1}" aria-label="ページの移動">
-        <a class="link" th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
-            th:href="@{/todos(keyword=${keyword}, category=${category}, order=${order}, hideCompleted=${hideCompleted}, page=${pageNumber}, trash=${trash})}"
-            th:attr="aria-current=${pageNumber == currentPage ? 'page' : null}" th:text="${pageNumber}">1</a>
-    </nav>
+        <nav class="pagination" th:if="${totalPages > 1}" aria-label="ページの移動">
+            <a class="link" th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
+                th:href="@{/todos(keyword=${keyword}, category=${category}, order=${order}, hideCompleted=${hideCompleted}, page=${pageNumber}, trash=${trash})}"
+                th:attr="aria-current=${pageNumber == currentPage ? 'page' : null}" th:text="${pageNumber}">1</a>
+        </nav>
     </div>
 
     <script>
@@ -186,6 +212,50 @@
 
             // 4秒後に自動で消す
             setTimeout(closeNotice, 4000);
+        });
+    </script>
+    <script th:if="${order == 'manual' and trash == 0}" th:src="@{/todo-reorder.js?v=1}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectAll = document.getElementById('select-all-todos');
+            const checkboxes = document.querySelectorAll('.todo-select-checkbox');
+            const deleteButton = document.querySelector('.bulk-delete-button');
+
+            if (!selectAll || !deleteButton) return;
+
+            function updateSelection() {
+                const checkedCount = Array.from(checkboxes)
+                    .filter(checkbox => checkbox.checked && !checkbox.disabled)
+                    .length;
+
+                deleteButton.disabled = checkedCount === 0;
+
+                const available = Array.from(checkboxes)
+                    .filter(checkbox => !checkbox.disabled);
+
+                selectAll.checked = available.length > 0
+                    && checkedCount === available.length;
+
+                selectAll.indeterminate = checkedCount > 0
+                    && checkedCount < available.length;
+            }
+
+            selectAll.addEventListener('change', () => {
+                checkboxes.forEach(checkbox => {
+                    if (!checkbox.disabled) {
+                        checkbox.checked = selectAll.checked;
+                    }
+                });
+
+                updateSelection();
+            });
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelection);
+            });
+
+            updateSelection();
         });
     </script>
 

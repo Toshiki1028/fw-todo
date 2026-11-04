@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>一括削除の確認</title>
+    <script src="/theme.js?v=theme-3"></script>
+    <link rel="stylesheet" href="/css/style.css?v=theme-3">
+</head>
+
+<body>
+    <div class="container todo-delete-page">
+        <h1 class="page-title">削除内容の確認</h1>
+
+        <p>
+            選択した
+            <strong th:text="${#lists.size(selectedTodos)}">0</strong>
+            件のやることを削除しますか？
+        </p>
+
+        <ul>
+            <li th:each="todo : ${selectedTodos}" th:text="${todo.title}">
+                やること
+            </li>
+        </ul>
+
+        <div class="confirm-actions">
+            <form th:action="@{/todos/delete-selected}" method="post">
+                <input type="hidden" name="confirmed" value="true">
+
+                <input type="hidden" name="selectedIds" th:each="todo : ${selectedTodos}" th:value="${todo.id}">
+
+                <button class="btn" type="submit">消す</button>
+            </form>
+
+            <a class="btn sub" th:href="@{/todos}">やめる</a>
+        </div>
+    </div>
+</body>
+
+</html>

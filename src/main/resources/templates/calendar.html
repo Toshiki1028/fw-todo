@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>カレンダー</title>
-    <script src="/theme.js?v=theme-3"></script>
-    <link rel="stylesheet" href="/css/style.css?v=theme-3" th:href="@{/css/style.css(v='theme-3')}">
+    <script src="/theme.js?v=wallpaper-1"></script>
+    <link rel="stylesheet" href="/css/style.css?v=wallpaper-1" th:href="@{/css/style.css(v='wallpaper-1')}">
 </head>
 
 <body>
@@ -30,6 +30,7 @@
                 </div>
             </div>
             <nav class="page-switch" aria-label="表示画面の切り替え">
+                <button type="button" data-wallpaper-open>壁紙</button>
                 <a th:href="@{/todos}"><span aria-hidden="true">≡</span> 一覧</a>
                 <a th:href="@{/calendar}" aria-current="page"><span aria-hidden="true">▦</span> カレンダー</a>
             </nav>
