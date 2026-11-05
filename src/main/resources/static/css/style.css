@@ -47,6 +47,7 @@ html {
     background-size: cover;
     background-attachment: fixed;
     background-repeat: no-repeat;
+    scrollbar-gutter: stable;
 }
 
 body {
@@ -288,13 +289,12 @@ body {
 }
 
 .todo-table th {
-    padding-block: 4px;
     background: var(--todo-table-header-bg);
     font-weight: bold;
 }
 
 .todo-table tbody tr {
-    height: 40px;
+    height: 36px;
 }
 
 .todo-table tr.todo-overdue td {
@@ -437,6 +437,7 @@ body {
     text-align: left;
     text-overflow: ellipsis;
     white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 
@@ -455,19 +456,6 @@ body {
     filter: none;
     transform: none;
 }
-
-/* 選択肢は浮き上がらない */
-.category-option [data-category-select] {
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-@media (hover: hover) {
-    .category-option [data-category-select]:hover {
-        transform: none;
-        filter: none;
-    }
-}
-
 
 .category-editor {
     grid-column: 1 / -1;
@@ -1056,20 +1044,9 @@ body {
     margin-bottom: 8px;
 }
 
-.todo-list-page .search-bar .search-field {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-}
-
 .todo-list-page .search-bar .search-keyword {
-    width: 220px;
+    width: 200px;
     min-width: 0;
-}
-
-.todo-list-page .search-bar .search-category {
-    width: 155px;
 }
 
 .todo-list-page .search-bar .form-input {
@@ -1080,42 +1057,6 @@ body {
 .todo-list-page .search-bar .btn {
     padding: 5px 12px;
     font-size: 14px;
-}
-
-.todo-list-page .todo-list-options {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 18px;
-    margin-bottom: 12px;
-    font-size: 14px;
-}
-
-.todo-list-page .todo-list-options label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.todo-list-page .todo-sort-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-left: auto;
-}
-
-@media (max-width: 650px) {
-    .todo-list-page .search-bar .search-field {
-        flex-wrap: wrap;
-    }
-
-    .todo-list-page .search-bar .search-keyword {
-        width: 170px;
-    }
-
-    .todo-list-page .todo-sort-links {
-        margin-left: 0;
-    }
 }
 
 /* Todo一覧：検索と表示条件を横一列にする */
@@ -1147,40 +1088,11 @@ body {
     cursor: not-allowed;
 }
 
-/* 完了表示と並び替えの余白をなくす */
-.todo-list-page .todo-filter-row .todo-list-options {
-    margin-bottom: 0;
-    flex: 1;
-}
-
-/* 検索欄の幅 */
-.todo-list-page .todo-filter-row .search-keyword {
-    width: 200px;
-}
-
 /* 狭い画面では自動的に折り返す */
 @media (max-width: 650px) {
     .todo-list-page .todo-filter-row {
         align-items: flex-start;
     }
-
-    .todo-list-page .todo-filter-row .todo-list-options {
-        flex-basis: 100%;
-    }
-}
-
-/* 検索・完了表示・並び替えを横一列にする */
-.todo-list-page .todo-filter-row .todo-list-options {
-    display: flex;
-    align-items: center;
-    flex: 1;
-    min-width: 0;
-    gap: 12px;
-    margin-bottom: 0;
-}
-
-.todo-list-page .todo-filter-row .todo-sort-links {
-    margin-left: auto;
 }
 
 /* 登録・編集画面：ジャンルと優先度を横並びにする */
@@ -1258,7 +1170,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: 5px;
     white-space: nowrap;
 }
 
@@ -1272,7 +1184,7 @@ body {
 .todo-operation-links {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 5px;
 }
 
 /* 操作ボタンのサイズ調整 */
@@ -1383,12 +1295,12 @@ body {
 
 
 /* 表の上に操作項目を配置 */
-.todo-table-toolbar {
+.todo-list-page .todo-table-toolbar {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 180px 65px 105px 80px 100px 40px;
     align-items: end;
     width: 100%;
-    margin-top: -20px;
+    margin-top: -23px;
     margin-bottom: 2px;
 }
 
@@ -1397,18 +1309,13 @@ body {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
+        margin-top: 0;
     }
 
     .todo-list-page .todo-toolbar-empty {
         display: none;
     }
 }
-
-.todo-toolbar-manual {
-    font-size: 14px;
-    padding-left: 8px;
-}
-
 
 .todo-toolbar-sort {
     display: flex;
@@ -1438,18 +1345,6 @@ body {
 .todo-table th:nth-child(3) {
     white-space: nowrap;
     font-size: 13px;
-}
-
-.todo-list-options {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
-}
-
-/* 月・週切り替え時のスクロールバーによる横ずれを防ぐ */
-html {
-    scrollbar-gutter: stable;
 }
 
 /* ボタン共通：マウスを乗せると少し浮く */
@@ -1692,29 +1587,10 @@ input[type="button"]:not(:disabled):active {
 /* 優先度の選択メニューは浮かせない */
 @media (hover: hover) {
 
-    .priority-trigger:hover,
-    .priority-menu [data-priority-value]:hover {
+    .priority-trigger:hover {
         transform: none;
         filter: none;
     }
-}
-
-/* Todo一覧：操作アイコン */
-.todo-operation {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
-
-.todo-operation form {
-    margin: 0;
-}
-
-.todo-operation-links {
-    display: flex;
-    align-items: center;
-    gap: 5px;
 }
 
 .todo-icon-action {
@@ -1801,73 +1677,21 @@ input[type="button"]:not(:disabled):active {
 }
 
 
-/* カレンダー：上下のパネルを分離 */
-.container.calendar-page {
-    background: transparent;
-    box-shadow: none;
-    padding-top: 0;
-}
-
-/* 上側のパネル */
-/* カレンダー上側のパネル */
-.calendar-page>.calendar-toolbar {
-    background: var(--content-panel-bg);
-    border-radius: 14px;
-    box-shadow: 0 6px 24px rgba(6, 21, 44, 0.10);
-    padding: 24px 16px;
-    margin: 8px -16px 0;
-    height: auto;
-    min-height: 96px;
-}
-
-/* 空が見える8pxの隙間 */
-.calendar-page>.calendar-panel-gap {
-    height: 8px;
-    background: transparent;
-}
-
-/* 下側のカレンダーパネル */
-.calendar-page>.calendar-scroll {
-    background: var(--content-panel-bg);
-    padding: 16px;
-    margin: 0 -16px;
-    border-radius: 14px;
-    box-shadow: 0 6px 24px rgba(6, 21, 44, 0.10);
-}
-
-/* カレンダー：上側の隙間だけ残す */
-.container.calendar-page {
-    padding-top: 8px;
-}
-
-.calendar-page>.calendar-toolbar {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
-.calendar-page>.calendar-panel-gap {
-    display: none;
-}
-
-.calendar-page>.calendar-scroll {
-    margin-top: 0;
-}
-
-/* やること一覧：パネルの上側に8pxの隙間 */
+/* カレンダーと一覧のパネル位置 */
 .container.todo-list-page {
     margin-top: 8px;
+    padding-top: 12px;
+    padding-bottom: 8px;
 }
 
-/* カレンダー：一体型パネルに戻す */
 .container.calendar-page {
     background: var(--content-panel-bg);
     box-shadow: 0 6px 24px rgba(6, 21, 44, 0.10);
-    padding: 24px 16px;
+    padding: 12px 16px 8px;
     margin-top: 8px;
     border-radius: 14px;
 }
 
-/* タイトル部分を独立したパネルにしない */
 .calendar-page>.calendar-toolbar {
     background: transparent;
     box-shadow: none;
@@ -1878,12 +1702,10 @@ input[type="button"]:not(:disabled):active {
     min-height: 0;
 }
 
-/* 途中に追加した隙間をなくす */
 .calendar-page>.calendar-panel-gap {
     display: none;
 }
 
-/* カレンダー本体も独立したパネルにしない */
 .calendar-page>.calendar-scroll {
     background: transparent;
     box-shadow: none;
@@ -1892,58 +1714,15 @@ input[type="button"]:not(:disabled):active {
     margin: 0;
 }
 
-/* 新規登録画面：上側に余白を確保 */
-.todo-form-page {
-    margin-top: 32px;
-}
-
 /* 新規登録・削除確認画面の上に余白を作る */
 .todo-form-page,
 .todo-delete-page {
     margin-top: 32px;
 }
 
-/* Todo一覧：縦方向をコンパクトにする */
-
-/* 表の各行を少し低くする */
-.todo-list-page .todo-table tbody tr {
-    height: 36px;
-}
-
-/* セルの上下余白を減らす */
-.todo-list-page .todo-table th,
-.todo-list-page .todo-table td {
-    padding-top: 3px;
-    padding-bottom: 3px;
-}
-
-/* 検索行の右側に表の上の操作項目をそろえる */
-.todo-list-page .todo-table-toolbar {
-    margin-top: -23px;
-    margin-bottom: 2px;
-}
-
-@media (max-width: 650px) {
-    .todo-list-page .todo-table-toolbar {
-        margin-top: 0;
-    }
-}
-
 /* ページ番号の上の余白を減らす */
 .todo-list-page .pagination {
     margin-top: 8px;
-}
-
-/* やること一覧：パネル上下の余白を縮める */
-.container.todo-list-page {
-    padding-top: 12px;
-    padding-bottom: 8px;
-}
-
-/* カレンダー画面：パネル上下の余白を縮める */
-.container.calendar-page {
-    padding-top: 12px;
-    padding-bottom: 8px;
 }
 
 /* カレンダー：月表示の日付マスをコンパクトにする */
