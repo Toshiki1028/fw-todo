@@ -67,7 +67,7 @@
 
             <div class="form-row">
                 <label class="form-label" for="dueDate">期限</label>
-                <input class="form-input" type="date" id="dueDate" th:field="*{dueDate}">
+                <input class="form-input" type="date" id="dueDate" th:field="*{dueDate}" onclick="if (this.showPicker) this.showPicker()">
             </div>
 
             <div class="form-row">

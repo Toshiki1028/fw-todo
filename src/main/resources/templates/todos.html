@@ -27,6 +27,9 @@
             <a class="btn sub" th:if="${trash == 1}" th:href="@{/todos}">一覧に戻る</a>
         </div>
         <div class="todo-filter-row">
+            <button type="submit" class="btn bulk-delete-button" form="bulk-delete-form" th:if="${trash == 0}" disabled>
+                削除
+            </button>
             <form id="todo-filter-form" class="search-bar" method="get" th:action="@{/todos}">
                 <input class="form-input search-keyword" type="text" name="keyword" th:value="${keyword}"
                     placeholder="やることを検索" aria-label="やることを検索">
@@ -37,19 +40,9 @@
 
                 <button class="btn" type="submit">絞り込む</button>
             </form>
-
-            <button type="submit" class="btn bulk-delete-button" form="bulk-delete-form" th:if="${trash == 0}" disabled>
-                削除
-            </button>
-            </form>
-
-
         </div>
         <p th:if="${#lists.isEmpty(todos)}" th:text="${trash == 1 ? '削除済みのやることはありません' : '表示できるやることはありません'}">
             表示できるやることはありません</p>
-        <form id="bulk-delete-form" th:action="@{/todos/delete-selected}" method="post" th:if="${trash == 0}">
-        </form>
-
         <form id="bulk-delete-form" th:action="@{/todos/delete-selected}" method="post" th:if="${trash == 0}">
         </form>
 
@@ -129,9 +122,9 @@
                                     th:value="${todo.id}" form="bulk-delete-form" aria-label="削除対象として選択">
                             </td>
 
-                            <td><span th:if="${todo.pinned}" th:text="${todo.title}">やること</span>
+                            <td th:title="${todo.title}"><span th:text="${todo.title}">やること</span>
                             </td>
-                            <td th:text="${todo.category}">ジャンル</td>
+                            <td th:text="${todo.category}" th:title="${todo.category}">ジャンル</td>
                             <td>
                                 <span th:if="${todo.priority == 1}" class="priority-high-marker"
                                     aria-hidden="true">★</span><span
