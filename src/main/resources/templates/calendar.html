@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <title>カレンダー</title>
     <script src="/theme.js?v=wallpaper-1"></script>
-    <link rel="stylesheet" href="/css/style.css?v=calendar-uniform-1" th:href="@{/css/style.css(v='calendar-uniform-1')}">
+    <link rel="stylesheet" href="/css/style.css?v=calendar-uniform-1"
+        th:href="@{/css/style.css(v='calendar-uniform-1')}">
 </head>
 
 <body>
@@ -55,7 +56,8 @@
                 <tbody>
                     <tr th:each="week : ${weeks}">
                         <th:block th:each="day : ${week}">
-                            <td th:if="${day != null}" th:attr="data-date=${day}">
+                            <td th:if="${day != null}" th:attr="data-date=${day}"
+                                th:classappend="${day.equals(T(java.time.LocalDate).now())} ? ' calendar-today' : ''">
                                 <div class="calendar-day-header">
                                     <span class="calendar-day-date" th:text="${day.dayOfMonth}"></span>
                                 </div>
@@ -153,10 +155,19 @@
             </div>
             <div class="fortune-content">
                 <form id="fortune-form" hidden>
-                    <label for="fortune-birth">生年月日を入力してください</label>
+                    <label for="fortune-birth-year">生年月日を入力してください</label>
                     <div class="fortune-form-row">
-                        <input id="fortune-birth" type="date" min="1900-01-07" max="2052-12-31" autocomplete="off"
-                            required>
+                        <div class="fortune-birth-fields">
+                            <select id="fortune-birth-year" aria-label="生年" required>
+                                <option value="">年</option>
+                            </select>
+                            <select id="fortune-birth-month" aria-label="生月" required>
+                                <option value="">月</option>
+                            </select>
+                            <select id="fortune-birth-day" aria-label="生日" required disabled>
+                                <option value="">日</option>
+                            </select>
+                        </div>
                         <button type="submit" class="btn">保存して占う</button>
                         <button type="button" class="btn sub fortune-small-btn" id="fortune-cancel"
                             hidden>キャンセル</button>
@@ -833,7 +844,9 @@
             fortuneLicenseToggle.setAttribute('aria-expanded', String(!fortuneLicenseDetails.hidden));
         });
         const fortuneForm = document.getElementById('fortune-form');
-        const birthInput = document.getElementById('fortune-birth');
+        const birthYear = document.getElementById('fortune-birth-year');
+        const birthMonth = document.getElementById('fortune-birth-month');
+        const birthDay = document.getElementById('fortune-birth-day');
         const fortuneResult = document.getElementById('fortune-result');
         const fortuneSettingsToggle = document.getElementById('fortune-settings-toggle');
         const fortuneSettings = document.getElementById('fortune-settings');
@@ -844,6 +857,29 @@
         let termsPromise;
         let renderedDay;
         let viewVersion = 0;
+
+        const currentYear = Number(FortuneCalculator.todayInJapan().slice(0, 4));
+        for (let year = currentYear; year >= 1900; year--) {
+            birthYear.add(new Option(year + '年', String(year)));
+        }
+        for (let month = 1; month <= 12; month++) {
+            birthMonth.add(new Option(month + '月', String(month)));
+        }
+
+        function updateBirthDays() {
+            const selectedDay = birthDay.value;
+            birthDay.replaceChildren(new Option('日', ''));
+            birthDay.disabled = !birthYear.value || !birthMonth.value;
+            if (birthDay.disabled) return;
+            const lastDay = new Date(Date.UTC(Number(birthYear.value), Number(birthMonth.value), 0)).getUTCDate();
+            for (let day = 1; day <= lastDay; day++) {
+                birthDay.add(new Option(day + '日', String(day)));
+            }
+            if (selectedDay && Number(selectedDay) <= lastDay) birthDay.value = selectedDay;
+        }
+
+        birthYear.addEventListener('change', updateBirthDays);
+        birthMonth.addEventListener('change', updateBirthDays);
 
         function savedBirthDate() {
             try {
@@ -861,7 +897,17 @@
         function showBirthForm(isChange) {
             viewVersion++;
             fortuneForm.reset();
-            birthInput.value = '';
+            updateBirthDays();
+            if (isChange) {
+                const saved = savedBirthDate();
+                const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(saved || '');
+                if (parts) {
+                    birthYear.value = String(Number(parts[1]));
+                    birthMonth.value = String(Number(parts[2]));
+                    updateBirthDays();
+                    birthDay.value = String(Number(parts[3]));
+                }
+            }
             fortuneForm.hidden = false;
             fortuneResult.hidden = true;
             fortuneSettings.hidden = true;
@@ -1003,7 +1049,8 @@
 
         fortuneForm.addEventListener('submit', async event => {
             event.preventDefault();
-            const birthDate = birthInput.value;
+            const birthDate = birthYear.value + '-' + birthMonth.value.padStart(2, '0') + '-'
+                + birthDay.value.padStart(2, '0');
             const version = ++viewVersion;
             showFortuneMessage(fortuneError, '');
             showFortuneMessage(fortuneStatus, '運勢を計算中...');

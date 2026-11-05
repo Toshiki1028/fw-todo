@@ -927,9 +927,18 @@ body {
     margin: 6px 0;
 }
 
-#fortune-birth {
-    max-width: 100%;
-    padding: 5px 8px;
+.fortune-birth-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr));
+    flex: 0 1 320px;
+    min-width: 0;
+    gap: 8px;
+}
+
+.fortune-birth-fields select {
+    width: 100%;
+    min-width: 0;
+    padding: 5px 6px;
     border: 1px solid var(--border-strong);
     border-radius: 6px;
     background: var(--input-inset-bg);
@@ -1328,6 +1337,7 @@ body {
 }
 
 .todo-toolbar-completed {
+    margin-left: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1626,7 +1636,7 @@ input[type="button"]:not(:disabled):active {
 }
 
 .todo-pin-action.is-pinned {
-    background: #fff2cf;
+    background: #FBCD50;
 }
 
 .todo-edit-action {
@@ -1739,4 +1749,10 @@ input[type="button"]:not(:disabled):active {
 /* カレンダー下の天気・運勢との余白 */
 .calendar-page .calendar-footer {
     margin-top: 6px;
+}
+
+/* カレンダー：今日の日付を強調 */
+.calendar-table td.calendar-today {
+    outline: 3px solid #2563eb;
+    outline-offset: -3px;
 }

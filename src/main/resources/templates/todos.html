@@ -65,6 +65,10 @@
                         th:href="@{/todos(keyword=${keyword}, category=${category}, order='desc', hideCompleted=${hideCompleted}, page=${currentPage}, trash=${trash})}">
                         降順
                     </a>
+                    <a class="link"
+                        th:href="@{/todos(keyword=${keyword}, category=${category}, order='manual', hideCompleted=${hideCompleted}, page=${currentPage}, trash=${trash})}">
+                        標準順
+                    </a>
                 </div>
 
                 <!-- 状態列の真上 -->
@@ -114,7 +118,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="todo : ${todos}"
+
+                        <tr th:each="todo : ${todos}" th:attr="data-todo-id=${todo.id},data-pinned=${todo.pinned}"
                             th:classappend="${trash == 0 and todo.dueDate != null and todo.dueDate.isBefore(today) and todo.completed != true} ? 'todo-overdue' : ''">
 
                             <td class="todo-select-column">
@@ -122,14 +127,19 @@
                                     th:value="${todo.id}" form="bulk-delete-form" aria-label="削除対象として選択">
                             </td>
 
-                            <td th:title="${todo.title}"><span th:text="${todo.title}">やること</span>
+                            <td th:title="${todo.title}">
+                                <span th:text="${todo.title}">やること</span>
                             </td>
+
                             <td th:text="${todo.category}" th:title="${todo.category}">ジャンル</td>
+
                             <td>
                                 <span th:if="${todo.priority == 1}" class="priority-high-marker"
-                                    aria-hidden="true">★</span><span
+                                    aria-hidden="true">★</span>
+                                <span
                                     th:text="${todo.priority == 1 ? '高' : (todo.priority == 2 ? '中' : (todo.priority == 3 ? '低' : ''))}">優先度</span>
                             </td>
+
                             <td th:text="${todo.dueDate}">期限</td>
 
                             <td class="todo-status-cell">
@@ -176,10 +186,11 @@
                                     <button class="btn" type="submit">戻す</button>
                                 </form>
                             </td>
-                            <td class="todo-reorder-cell"><span class="todo-drag-handle"
-                                    th:classappend="${order != 'manual' or trash == 1} ? ' is-disabled' : ''"
-                                    th:attr="aria-label=${order == 'manual' and trash == 0 ? 'ドラッグして並び替え' : '手動順に切り替えると並び替えできます'}"
-                                    title="ドラッグして並び替え">⋮⋮</span></td>
+                            <td class="todo-reorder-cell">
+                                <span class="todo-drag-handle" th:classappend="${trash == 1} ? ' is-disabled' : ''"
+                                    th:attr="aria-label=${trash == 0 ? 'ドラッグして並び替え' : '削除済みのため並び替えできません'}"
+                                    title="ドラッグして並び替え">⋮⋮</span>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -207,7 +218,7 @@
             setTimeout(closeNotice, 4000);
         });
     </script>
-    <script th:if="${order == 'manual' and trash == 0}" th:src="@{/todo-reorder.js?v=1}"></script>
+    <script th:if="${trash == 0}" th:src="@{/todo-reorder.js?v=1}"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
